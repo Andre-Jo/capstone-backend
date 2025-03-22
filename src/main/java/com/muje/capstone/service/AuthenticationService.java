@@ -1,0 +1,48 @@
+package com.muje.capstone.service;
+
+import com.muje.capstone.config.jwt.TokenProvider;
+import com.muje.capstone.domain.User;
+import com.muje.capstone.dto.LoginRequest;
+import com.muje.capstone.dto.LoginResponse;
+import com.muje.capstone.repository.UserRepository;
+import lombok.RequiredArgsConstructor;
+import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.BadCredentialsException;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.AuthenticationException;
+import org.springframework.stereotype.Service;
+
+import java.time.Duration;
+
+@Service
+@RequiredArgsConstructor
+public class AuthenticationService {
+    private final AuthenticationManager authenticationManager;
+    private final TokenProvider tokenProvider;
+    private final RefreshTokenService refreshTokenService;
+    private final UserRepository userRepository;
+
+    public LoginResponse login(LoginRequest request) {
+        // 이메일/비밀번호 검증
+        UsernamePasswordAuthenticationToken authToken =
+                new UsernamePasswordAuthenticationToken(request.getEmail(), request.getPassword());
+        try {
+            authenticationManager.authenticate(authToken);
+        } catch (AuthenticationException e) {
+            throw new BadCredentialsException("잘못된 이메일 또는 비밀번호입니다.");
+        }
+
+        // 사용자 정보 조회
+        User user = userRepository.findByEmail(request.getEmail())
+                .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 사용자입니다."));
+
+        // JWT 토큰 생성
+        String accessToken = tokenProvider.generateToken(user, Duration.ofHours(2));
+        String refreshToken = tokenProvider.generateToken(user, Duration.ofDays(7));
+
+        // 리프레시 토큰 저장
+        refreshTokenService.saveRefreshToken(user.getId(), refreshToken);
+
+        return new LoginResponse(accessToken, refreshToken);
+    }
+}
