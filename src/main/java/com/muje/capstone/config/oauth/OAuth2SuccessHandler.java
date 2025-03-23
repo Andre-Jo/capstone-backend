@@ -46,13 +46,13 @@ public class OAuth2SuccessHandler extends SimpleUrlAuthenticationSuccessHandler 
         User user = findByEmail(email);
 
         if (user != null) {
-            // 기존 회원이면 로그인 처리 후 /main 이동
+            // 기존 회원이면 로그인 처리 후 home 이동
             handleExistingUserLogin(response, user);
-            getRedirectStrategy().sendRedirect(request, response, "/main");
+            getRedirectStrategy().sendRedirect(request, response, "/");
         } else {
-            // 신규 회원이면 OAuth 정보 쿠키 저장 후 /signup 이동
+            // 신규 회원이면 OAuth 정보 쿠키 저장 후 회원가입 페이지 이동
             handleNewUserSignup(response, email, nickname, profileImage);
-            getRedirectStrategy().sendRedirect(request, response, "/signup");
+            getRedirectStrategy().sendRedirect(request, response, "/auth/register");
         }
     }
 

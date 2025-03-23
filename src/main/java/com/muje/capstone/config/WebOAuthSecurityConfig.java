@@ -3,7 +3,6 @@ package com.muje.capstone.config;
 import com.muje.capstone.config.jwt.TokenProvider;
 import com.muje.capstone.config.oauth.OAuth2AuthorizationRequestBasedOnCookieRepository;
 import com.muje.capstone.config.oauth.OAuth2SuccessHandler;
-//import com.muje.capstone.config.oauth.OAuth2UserCustomService;
 import com.muje.capstone.repository.RefreshTokenRepository;
 import com.muje.capstone.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
@@ -30,7 +29,6 @@ import java.util.List;
 @RequiredArgsConstructor
 @Configuration
 public class WebOAuthSecurityConfig {
-//    private final OAuth2UserCustomService oAuth2UserCustomService;
     private final TokenProvider tokenProvider;
     private final RefreshTokenRepository refreshTokenRepository;
     private final UserRepository userRepository;
@@ -54,14 +52,13 @@ public class WebOAuthSecurityConfig {
                         .anyRequest().permitAll()
                 )
                 .oauth2Login(oauth2 -> oauth2
-                        .loginPage("/login")
+                        .loginPage("/auth/login")
                         .authorizationEndpoint(authEndpoint ->
                                 authEndpoint.authorizationRequestRepository(oAuth2AuthorizationRequestBasedOnCookieRepository())
                         )
                         .successHandler(oAuth2SuccessHandler())
-//                        .userInfoEndpoint(userInfo -> userInfo.userService(oAuth2UserCustomService))
                 )
-                .logout(logout -> logout.logoutSuccessUrl("/login"))
+                .logout(logout -> logout.logoutSuccessUrl("/auth/login"))
                 .exceptionHandling(ex -> ex
                         .defaultAuthenticationEntryPointFor(
                                 new HttpStatusEntryPoint(HttpStatus.UNAUTHORIZED),

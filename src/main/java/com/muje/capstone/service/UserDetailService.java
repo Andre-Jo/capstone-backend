@@ -18,4 +18,3 @@ public class UserDetailService implements UserDetailsService {
                 .orElseThrow(() -> new IllegalArgumentException((email))); // 객체가 없을 때 예외 발생
     }
 }
-

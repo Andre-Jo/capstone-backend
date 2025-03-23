@@ -1,15 +1,14 @@
 package com.muje.capstone.service;
 
-import com.muje.capstone.config.jwt.TokenProvider;
 import com.muje.capstone.domain.User;
 import com.muje.capstone.domain.Graduate;
 import com.muje.capstone.domain.Student;
 import com.muje.capstone.dto.AddUserRequest;
+import com.muje.capstone.dto.UserInfoResponse;
 import com.muje.capstone.dto.UserType;
 import com.muje.capstone.repository.UserRepository;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
-import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 
@@ -72,4 +71,46 @@ public class UserService {
                 .orElseThrow(() -> new EntityNotFoundException("User with email " + email + " not found"));
     }
 
+    public UserInfoResponse getUserInfoByEmail(String email) {
+        User user = findByEmail(email);
+
+        // 공통 필드
+        String userEmail = user.getEmail();
+        String nickname = user.getNickname();
+        String school = user.getSchool();
+        String department = user.getDepartment();
+        UserType userType = user.getUserType();
+        String profileImage = user.getProfileImage();
+        Integer studentYear = user.getStudentYear();
+        Boolean isSchoolVerified = user.getIsSchoolVerified();
+
+        // 졸업생 전용 필드 (Graduate인 경우)
+        String currentCompany = null;
+        String currentSalary = null;
+        String skills = null;
+        Boolean isCompanyVerified = false;
+
+        if (user.getUserType() == UserType.GRADUATE) {
+            Graduate graduate = (Graduate) user;
+            currentCompany = graduate.getCurrentCompany();
+            currentSalary = graduate.getCurrentSalary();
+            skills = graduate.getSkills();
+            isCompanyVerified = graduate.getIsCompanyVerified();
+        }
+
+        return new UserInfoResponse(
+                userEmail,
+                nickname,
+                school,
+                department,
+                userType,
+                profileImage,
+                studentYear,
+                isSchoolVerified,
+                currentCompany,
+                currentSalary,
+                skills,
+                isCompanyVerified
+        );
+    }
 }
