@@ -1,11 +1,11 @@
 package com.muje.capstone.config;
 
 import com.muje.capstone.config.jwt.TokenProvider;
-import com.muje.capstone.config.oauth.OAuth2AuthorizationRequestBasedOnCookieRepository;
 import com.muje.capstone.config.oauth.OAuth2SuccessHandler;
 import com.muje.capstone.repository.RefreshTokenRepository;
 import com.muje.capstone.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.security.servlet.PathRequest;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -30,6 +30,10 @@ import java.util.List;
 @RequiredArgsConstructor
 @Configuration
 public class WebOAuthSecurityConfig {
+
+    @Value("${frontend.base-url}")
+    private String frontendBaseUrl;
+
     private final TokenProvider tokenProvider;
     private final RefreshTokenRepository refreshTokenRepository;
     private final UserRepository userRepository;
@@ -54,13 +58,10 @@ public class WebOAuthSecurityConfig {
                         .anyRequest().permitAll()
                 )
                 .oauth2Login(oauth2 -> oauth2
-                        .loginPage("/auth/login")
-                        .authorizationEndpoint(authEndpoint ->
-                                authEndpoint.authorizationRequestRepository(oAuth2AuthorizationRequestBasedOnCookieRepository())
-                        )
+                        .loginPage(frontendBaseUrl + "/auth/login")
                         .successHandler(oAuth2SuccessHandler())
                 )
-                .logout(logout -> logout.logoutSuccessUrl("/auth/login"))
+                .logout(logout -> logout.logoutSuccessUrl(frontendBaseUrl + "/"))
                 .exceptionHandling(ex -> ex
                         .defaultAuthenticationEntryPointFor(
                                 new HttpStatusEntryPoint(HttpStatus.UNAUTHORIZED),
@@ -84,11 +85,6 @@ public class WebOAuthSecurityConfig {
     @Bean
     public TokenAuthenticationFilter tokenAuthenticationFilter() {
         return new TokenAuthenticationFilter(tokenProvider);
-    }
-
-    @Bean
-    public OAuth2AuthorizationRequestBasedOnCookieRepository oAuth2AuthorizationRequestBasedOnCookieRepository() {
-        return new OAuth2AuthorizationRequestBasedOnCookieRepository();
     }
 
     @Bean
