@@ -4,12 +4,14 @@ import com.muje.capstone.domain.User;
 import com.muje.capstone.domain.Graduate;
 import com.muje.capstone.domain.Student;
 import com.muje.capstone.dto.AddUserRequest;
+import com.muje.capstone.dto.OAuth2UserResponse;
 import com.muje.capstone.dto.UserInfoResponse;
 import com.muje.capstone.dto.UserType;
 import com.muje.capstone.repository.UserRepository;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.security.oauth2.core.user.OAuth2User;
 import org.springframework.stereotype.Service;
 
 @RequiredArgsConstructor
@@ -112,6 +114,18 @@ public class UserService {
                 skills,
                 isCompanyVerified
         );
+    }
+
+    public OAuth2UserResponse getSocialUserInfo(OAuth2User oAuth2User) {
+        if (oAuth2User == null) {
+            return null;
+        }
+
+        String email = (String) oAuth2User.getAttributes().get("email");
+        String nickname = (String) oAuth2User.getAttributes().get("name");
+        String profileImage = (String) oAuth2User.getAttributes().get("picture");
+
+        return new OAuth2UserResponse(email, nickname, profileImage);
     }
 
 }

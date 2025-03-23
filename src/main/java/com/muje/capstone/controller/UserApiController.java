@@ -1,9 +1,6 @@
 package com.muje.capstone.controller;
 
-import com.muje.capstone.dto.AddUserRequest;
-import com.muje.capstone.dto.LoginRequest;
-import com.muje.capstone.dto.LoginResponse;
-import com.muje.capstone.dto.UserInfoResponse;
+import com.muje.capstone.dto.*;
 import com.muje.capstone.service.AuthenticationService;
 import com.muje.capstone.service.LogoutService;
 import com.muje.capstone.service.UserService;
@@ -15,6 +12,8 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.oauth2.core.user.OAuth2User;
 import org.springframework.web.bind.annotation.*;
 
 @RequiredArgsConstructor
@@ -52,6 +51,17 @@ public class UserApiController {
     public ResponseEntity<String> logout(HttpServletRequest request, HttpServletResponse response) {
         logoutService.logout(request, response);
         return ResponseEntity.ok("로그아웃 성공");
+    }
+
+    @GetMapping("/social-user")
+    public ResponseEntity<OAuth2UserResponse> getSocialUserInfo(@AuthenticationPrincipal OAuth2User oAuth2User) {
+        OAuth2UserResponse userResponse = userService.getSocialUserInfo(oAuth2User);
+
+        if (userResponse == null) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+        }
+
+        return ResponseEntity.ok(userResponse);
     }
 
     @GetMapping("/me")

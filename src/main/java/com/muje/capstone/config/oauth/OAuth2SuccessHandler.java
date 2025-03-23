@@ -14,6 +14,7 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.oauth2.core.user.OAuth2User;
 import org.springframework.security.web.authentication.SimpleUrlAuthenticationSuccessHandler;
 import org.springframework.stereotype.Component;
+import org.springframework.beans.factory.annotation.Value;
 
 import java.io.IOException;
 import java.time.Duration;
@@ -23,6 +24,10 @@ import java.util.Map;
 @RequiredArgsConstructor
 @Component
 public class OAuth2SuccessHandler extends SimpleUrlAuthenticationSuccessHandler {
+
+    @Value("${frontend.base-url}") // application.yml에서 값 주입
+    private String frontendBaseUrl;
+
     public static final String REFRESH_TOKEN_COOKIE_NAME = "refresh_token";
     public static final String ACCESS_TOKEN_COOKIE_NAME = "access_token";
     public static final String OAUTH_USER_INFO_COOKIE_NAME = "oauth_user_info";
@@ -48,11 +53,10 @@ public class OAuth2SuccessHandler extends SimpleUrlAuthenticationSuccessHandler 
         if (user != null) {
             // 기존 회원이면 로그인 처리 후 home 이동
             handleExistingUserLogin(response, user);
-            getRedirectStrategy().sendRedirect(request, response, "/");
+            getRedirectStrategy().sendRedirect(request, response, frontendBaseUrl + "/");
         } else {
-            // 신규 회원이면 OAuth 정보 쿠키 저장 후 회원가입 페이지 이동
-            handleNewUserSignup(response, email, nickname, profileImage);
-            getRedirectStrategy().sendRedirect(request, response, "/auth/register");
+            // 신규 회원이면 OAuth 로그인 후 회원가입 페이지 이동
+            getRedirectStrategy().sendRedirect(request, response, frontendBaseUrl + "/auth/register");
         }
     }
 
@@ -75,16 +79,6 @@ public class OAuth2SuccessHandler extends SimpleUrlAuthenticationSuccessHandler 
         String refreshToken = tokenProvider.generateToken(user, REFRESH_TOKEN_DURATION);
         saveRefreshToken(user.getId(), refreshToken);
         CookieUtil.addCookie(response, REFRESH_TOKEN_COOKIE_NAME, refreshToken, (int) REFRESH_TOKEN_DURATION.toSeconds());
-    }
-
-    // 신규 회원 회원가입 처리
-    private void handleNewUserSignup(HttpServletResponse response, String email, String nickname, String profileImage) {
-        // OAuth에서 받은 정보 쿠키로 저장 (프론트에서 회원가입 시 활용)
-        Map<String, String> oauthUserInfo = new HashMap<>();
-        oauthUserInfo.put("email", email);
-        oauthUserInfo.put("nickname", nickname);
-        oauthUserInfo.put("profileImage", profileImage);
-        CookieUtil.addCookie(response, OAUTH_USER_INFO_COOKIE_NAME, CookieUtil.serialize(oauthUserInfo), (int) OAUTH_USER_INFO_DURATION.toSeconds());
     }
 
     // 리프레시 토큰을 DB에 저장

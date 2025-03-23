@@ -35,3 +35,6 @@ spring:
 jwt:
   issuer: capstone_muje
   secret_key: capstone_muje
+
+frontend:
+  base-url: "http://localhost:3000"
