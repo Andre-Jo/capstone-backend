@@ -37,10 +37,10 @@ public class UserApiController {
     }
 
     @PostMapping("/login")
-    public ResponseEntity<?> login(@RequestBody LoginRequest request) {
+    public ResponseEntity<?> login(@RequestBody LoginRequest request, HttpServletResponse response) {
         try {
-            LoginResponse loginResponse = authenticationService.login(request);
-            return ResponseEntity.ok(loginResponse);
+            LoginResponse loginResponse = authenticationService.login(request, response);
+            return ResponseEntity.ok("로그인 성공");
         } catch (BadCredentialsException e) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("잘못된 이메일 또는 비밀번호");
         } catch (IllegalArgumentException e) {

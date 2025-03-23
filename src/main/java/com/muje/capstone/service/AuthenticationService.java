@@ -5,6 +5,8 @@ import com.muje.capstone.domain.User;
 import com.muje.capstone.dto.LoginRequest;
 import com.muje.capstone.dto.LoginResponse;
 import com.muje.capstone.repository.UserRepository;
+import com.muje.capstone.util.CookieUtil;
+import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.BadCredentialsException;
@@ -22,7 +24,7 @@ public class AuthenticationService {
     private final RefreshTokenService refreshTokenService;
     private final UserRepository userRepository;
 
-    public LoginResponse login(LoginRequest request) {
+    public LoginResponse login(LoginRequest request, HttpServletResponse response) {
         // 이메일/비밀번호 검증
         UsernamePasswordAuthenticationToken authToken =
                 new UsernamePasswordAuthenticationToken(request.getEmail(), request.getPassword());
@@ -42,6 +44,10 @@ public class AuthenticationService {
 
         // 리프레시 토큰 저장
         refreshTokenService.saveRefreshToken(user.getId(), refreshToken);
+
+        // 쿠키에 토큰 저장 (HttpOnly, Secure 옵션 적용)
+        CookieUtil.addCookie(response, "accessToken", accessToken, 2 * 60 * 60);
+        CookieUtil.addCookie(response, "refreshToken", refreshToken, 7 * 24 * 60 * 60);
 
         return new LoginResponse(accessToken, refreshToken);
     }
