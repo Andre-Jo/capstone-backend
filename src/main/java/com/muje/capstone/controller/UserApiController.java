@@ -5,6 +5,7 @@ import com.muje.capstone.dto.LoginRequest;
 import com.muje.capstone.dto.LoginResponse;
 import com.muje.capstone.dto.UserInfoResponse;
 import com.muje.capstone.service.AuthenticationService;
+import com.muje.capstone.service.LogoutService;
 import com.muje.capstone.service.UserService;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
@@ -14,8 +15,6 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.core.Authentication;
-import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.security.web.authentication.logout.SecurityContextLogoutHandler;
 import org.springframework.web.bind.annotation.*;
 
 @RequiredArgsConstructor
@@ -24,6 +23,7 @@ import org.springframework.web.bind.annotation.*;
 public class UserApiController {
 
     private final UserService userService;
+    private final LogoutService logoutService;
     private final AuthenticationService authenticationService;
 
     @PostMapping("/signup")
@@ -50,7 +50,7 @@ public class UserApiController {
 
     @GetMapping("/logout")
     public ResponseEntity<String> logout(HttpServletRequest request, HttpServletResponse response) {
-        new SecurityContextLogoutHandler().logout(request, response, SecurityContextHolder.getContext().getAuthentication());
+        logoutService.logout(request, response);
         return ResponseEntity.ok("로그아웃 성공");
     }
 
