@@ -11,14 +11,16 @@ import java.util.Optional;
 
 public class CookieUtil {
 
-    // HttpOnly 쿠키에 토큰 저장
-    // 요청값(이름, 값, 만료 기간)을 바탕으로 쿠키 추가
     public static void addCookie(HttpServletResponse response, String name, String value, int maxAge) {
         Cookie cookie = new Cookie(name, value);
-        cookie.setHttpOnly(true);
-        cookie.setSecure(true);  // 실제 서비스 환경에서는 HTTPS 사용
-        cookie.setPath("/");
-        cookie.setMaxAge(maxAge);
+        cookie.setHttpOnly(true);   // 쿠키를 JavaScript에서 접근할 수 없도록 설정
+        cookie.setSecure(true);     // HTTPS 환경에서만 쿠키를 전송
+        cookie.setPath("/");        // 전체 경로에서 쿠키를 사용할 수 있도록 설정
+        cookie.setMaxAge(maxAge);   // 쿠키 만료 시간 설정
+
+        // SameSite 설정 (CSRF 방어)
+        cookie.setAttribute("SameSite", "Strict"); // 또는 "Lax"로 설정 가능
+
         response.addCookie(cookie);
     }
 

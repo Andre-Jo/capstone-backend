@@ -1,6 +1,7 @@
 package com.muje.capstone.config;
 
 import com.muje.capstone.config.jwt.TokenProvider;
+import com.muje.capstone.service.TokenService;
 import com.muje.capstone.config.oauth.OAuth2SuccessHandler;
 import com.muje.capstone.repository.RefreshTokenRepository;
 import com.muje.capstone.repository.UserRepository;
@@ -35,6 +36,7 @@ public class WebOAuthSecurityConfig {
     private String frontendBaseUrl;
 
     private final TokenProvider tokenProvider;
+    private final TokenService tokenService;
     private final RefreshTokenRepository refreshTokenRepository;
     private final UserRepository userRepository;
 
@@ -84,7 +86,7 @@ public class WebOAuthSecurityConfig {
 
     @Bean
     public TokenAuthenticationFilter tokenAuthenticationFilter() {
-        return new TokenAuthenticationFilter(tokenProvider);
+        return new TokenAuthenticationFilter(tokenProvider, tokenService);
     }
 
     @Bean
