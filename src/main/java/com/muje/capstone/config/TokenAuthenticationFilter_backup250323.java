@@ -1,21 +1,23 @@
 package com.muje.capstone.config;
 
 import com.muje.capstone.config.jwt.TokenProvider;
-import jakarta.servlet.http.Cookie;
-import jakarta.servlet.http.HttpServletRequest;
-import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.filter.OncePerRequestFilter;
+
 import java.io.IOException;
 
+/*
 @RequiredArgsConstructor
-public class TokenAuthenticationFilter extends OncePerRequestFilter {
+public class TokenAuthenticationFilter_backup250323 extends OncePerRequestFilter {
     private final TokenProvider tokenProvider;
-    private final static String ACCESS_TOKEN_COOKIE = "accessToken"; // accessToken 쿠키 이름
+    private final static String HEADER_AUTHORIZATION = "Authorization";
+    private final static String TOKEN_PREFIX = "Bearer ";
 
     @Override
     protected void doFilterInternal(
@@ -23,25 +25,23 @@ public class TokenAuthenticationFilter extends OncePerRequestFilter {
             HttpServletResponse response,
             FilterChain filterChain) throws ServletException, IOException {
 
-        // 쿠키에서 accessToken 값을 추출
-        String token = getAccessTokenFromCookie(request);
-        // 추출한 토큰이 유효하면 인증 정보를 설정
-        if (token != null && tokenProvider.validToken(token)) {
+        // 요청 헤더의 Authorization 키의 값 조회
+        String authorizationHeader = request.getHeader(HEADER_AUTHORIZATION);
+        // 가져온 값에서 접두사 제거
+        String token = getAccessToken(authorizationHeader);
+        // 가져온 토큰이 유효한지 확인하고, 유효한 때는 인증 정보를 설정
+        if(tokenProvider.validToken(token)) {
             Authentication authentication = tokenProvider.getAuthentication(token);
             SecurityContextHolder.getContext().setAuthentication(authentication);
         }
+
         filterChain.doFilter(request, response);
     }
 
-    // 쿠키에서 특정 이름의 토큰 값을 추출하는 메서드
-    private String getAccessTokenFromCookie(HttpServletRequest request) {
-        if (request.getCookies() != null) {
-            for (Cookie cookie : request.getCookies()) {
-                if (ACCESS_TOKEN_COOKIE.equals(cookie.getName())) {
-                    return cookie.getValue();
-                }
-            }
+    private String getAccessToken(String authorizationHeader) {
+        if (authorizationHeader != null && authorizationHeader.startsWith(TOKEN_PREFIX)) {
+            return authorizationHeader.substring(TOKEN_PREFIX.length());
         }
         return null;
     }
-}
+}*/
