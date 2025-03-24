@@ -5,6 +5,7 @@ import com.muje.capstone.service.TokenService;
 import com.muje.capstone.config.oauth.OAuth2SuccessHandler;
 import com.muje.capstone.repository.RefreshTokenRepository;
 import com.muje.capstone.repository.UserRepository;
+import com.muje.capstone.service.UserDetailService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.security.servlet.PathRequest;
@@ -38,7 +39,7 @@ public class WebOAuthSecurityConfig {
     private final TokenProvider tokenProvider;
     private final TokenService tokenService;
     private final RefreshTokenRepository refreshTokenRepository;
-    private final UserRepository userRepository;
+    private final UserDetailService userDetailService;
 
     @Bean
     public WebSecurityCustomizer configure() {
@@ -54,7 +55,7 @@ public class WebOAuthSecurityConfig {
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(auth -> auth
                         // 자체 로그인, 토큰 재발급, OAuth2 관련 엔드포인트는 permit
-                        .requestMatchers("/api/auth/**", "/api/token", "/oauth2/**").permitAll()
+                        .requestMatchers("/api/auth/**", "/oauth2/**").permitAll()
                         .requestMatchers("/api/auth/me").authenticated()
                         .requestMatchers("/api/**").authenticated()
                         .anyRequest().permitAll()
@@ -80,7 +81,7 @@ public class WebOAuthSecurityConfig {
     public OAuth2SuccessHandler oAuth2SuccessHandler() {
         return new OAuth2SuccessHandler(tokenProvider,
                 refreshTokenRepository,
-                userRepository
+                userDetailService
                 );
     }
 

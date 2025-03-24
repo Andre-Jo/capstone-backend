@@ -18,15 +18,21 @@ import java.time.Duration;
 @RequiredArgsConstructor
 public class TokenAuthenticationFilter extends OncePerRequestFilter {
     private final TokenProvider tokenProvider;
-    private final TokenService tokenService; // TokenService 추가
-    private final static String ACCESS_TOKEN_COOKIE = "accessToken"; // accessToken 쿠키 이름
-    private final static String REFRESH_TOKEN_COOKIE = "refreshToken"; // refreshToken 쿠키 이름
+    private final TokenService tokenService;
+    private final static String ACCESS_TOKEN_COOKIE = "accessToken";
+    private final static String REFRESH_TOKEN_COOKIE = "refreshToken";
 
     @Override
     protected void doFilterInternal(
             HttpServletRequest request,
             HttpServletResponse response,
             FilterChain filterChain) throws ServletException, IOException {
+
+        // public 엔드포인트라면 토큰 검증 로직 스킵
+        if (isPublicEndpoint(request)) {
+            filterChain.doFilter(request, response);
+            return;
+        }
 
         // 쿠키에서 accessToken, refreshToken 값을 추출
         String accessToken = getAccessTokenFromCookie(request);
@@ -51,8 +57,25 @@ public class TokenAuthenticationFilter extends OncePerRequestFilter {
                 return;
             }
         }
-
         filterChain.doFilter(request, response);
+    }
+
+    // public 엔드포인트 (예, 회원가입, 로그인 등) 판단 로직
+    private boolean isPublicEndpoint(HttpServletRequest request) {
+        String uri = request.getRequestURI();
+        // API가 아닌 경우에는 건너뛰기
+        if (!uri.startsWith("/api")) {
+            return true;
+        }
+        // /api/auth/** 중 단, 인증 필요 엔드포인트(ex. /api/auth/me)는 제외
+        if (uri.startsWith("/api/auth/") && !uri.equals("/api/auth/me")) {
+            return true;
+        }
+        // 토큰 재발급이나 OAuth2 관련 엔드포인트도 건너뛰기
+        if (uri.startsWith("/oauth2")) {
+            return true;
+        }
+        return false;
     }
 
     // 쿠키에서 특정 이름의 토큰 값을 추출하는 메서드

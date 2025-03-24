@@ -73,6 +73,7 @@ public class UserApiController {
         String email = authentication.getName();
         try {
             UserInfoResponse response = userService.getUserInfoByEmail(email);
+            System.out.println(response);
             return ResponseEntity.ok(response);
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body("사용자 정보를 찾을 수 없습니다.");

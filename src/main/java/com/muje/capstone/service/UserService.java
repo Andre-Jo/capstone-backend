@@ -14,6 +14,8 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.oauth2.core.user.OAuth2User;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDateTime;
+
 @RequiredArgsConstructor
 @Service
 public class UserService {
@@ -78,21 +80,35 @@ public class UserService {
 
         // 공통 필드
         String userEmail = user.getEmail();
+        String password = user.getPassword();
         String nickname = user.getNickname();
         String school = user.getSchool();
         String department = user.getDepartment();
-        UserType userType = user.getUserType();
-        String profileImage = user.getProfileImage();
         Integer studentYear = user.getStudentYear();
+        UserType userType = user.getUserType();
+        Integer points = user.getPoints();
+        String profileImage = user.getProfileImage();
+        LocalDateTime createdAt = user.getCreatedAt();
+        LocalDateTime updatedAt = user.getUpdatedAt();
         Boolean isSchoolVerified = user.getIsSchoolVerified();
 
-        // 졸업생 전용 필드 (Graduate인 경우)
+        // 재학생 전용 필드 (STUDENT 타입)
+        Boolean isSubscribed = null;
+        LocalDateTime subscriptionStartDate = null;
+        LocalDateTime subscriptionEndDate = null;
+
+        // 졸업생 전용 필드 (GRADUATE 타입)
         String currentCompany = null;
         String currentSalary = null;
         String skills = null;
-        Boolean isCompanyVerified = false;
+        Boolean isCompanyVerified = null;
 
-        if (user.getUserType() == UserType.GRADUATE) {
+        if (user.getUserType() == UserType.STUDENT) {
+            Student student = (Student) user;
+            isSubscribed = student.getIsSubscribed();
+            subscriptionStartDate = student.getSubscriptionStartDate();
+            subscriptionEndDate = student.getSubscriptionEndDate();
+        } else if (user.getUserType() == UserType.GRADUATE) {
             Graduate graduate = (Graduate) user;
             currentCompany = graduate.getCurrentCompany();
             currentSalary = graduate.getCurrentSalary();
@@ -101,20 +117,13 @@ public class UserService {
         }
 
         return new UserInfoResponse(
-                userEmail,
-                nickname,
-                school,
-                department,
-                userType,
-                profileImage,
-                studentYear,
-                isSchoolVerified,
-                currentCompany,
-                currentSalary,
-                skills,
-                isCompanyVerified
+                userEmail, password, nickname, school, department, studentYear, userType, points,
+                profileImage, createdAt, updatedAt, isSchoolVerified,
+                isSubscribed, subscriptionStartDate, subscriptionEndDate,
+                currentCompany, currentSalary, skills, isCompanyVerified
         );
     }
+
 
     public OAuth2UserResponse getSocialUserInfo(OAuth2User oAuth2User) {
         if (oAuth2User == null) {

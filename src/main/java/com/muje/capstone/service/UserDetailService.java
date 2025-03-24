@@ -14,7 +14,6 @@ public class UserDetailService implements UserDetailsService {
 
     @Override
     public User loadUserByUsername(String email) {
-        return userRepository.findByEmail(email)
-                .orElseThrow(() -> new IllegalArgumentException((email))); // 객체가 없을 때 예외 발생
+        return userRepository.findByEmail(email).orElse(null);
     }
 }
