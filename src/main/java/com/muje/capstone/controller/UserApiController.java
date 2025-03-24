@@ -63,10 +63,6 @@ public class UserApiController {
 
     @GetMapping("/social-user")
     public ResponseEntity<OAuth2UserResponse> getSocialUserInfo(HttpServletRequest request) {
-        String cookieValue = "rO0ABXNyAChjb20ubXVqZS5jYXBzdG9uZS5kdG8uT0F1dGgyVXNlclJlc3BvbnNlAAAAAAAAAAECAANMAAVlbWFpbHQAEkxqYXZhL2xhbmcvU3RyaW5nO0wACG5pY2tuYW1lcQB-AAFMAAxwcm9maWxlSW1hZ2VxAH4AAXhwdAAVam9hbmRyZTk5MTFAZ21haWwuY29tdAAM7KGw7JWI65Oc66CIdABgaHR0cHM6Ly9saDMuZ29vZ2xldXNlcmNvbnRlbnQuY29tL2EvQUNnOG9jSmpIUXJHaVZ1NEhiblE5SXdUa01ydmYzUkU0VTJ5S19WVGVlZFVrQVBwSHNkZThnPXM5Ni1j"; // 브라우저 개발자 도구에서 "socialUserInfo" 쿠키 값 복사
-        byte[] data = Base64.getUrlDecoder().decode(cookieValue);
-        Object obj = SerializationUtils.deserialize(data);
-
         Optional<String> serializedUser = CookieUtil.getCookie(request, "socialUserInfo");
         if (serializedUser.isEmpty()) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
