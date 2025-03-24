@@ -4,7 +4,6 @@ import com.muje.capstone.config.jwt.TokenProvider;
 import com.muje.capstone.service.TokenService;
 import com.muje.capstone.config.oauth.OAuth2SuccessHandler;
 import com.muje.capstone.repository.RefreshTokenRepository;
-import com.muje.capstone.repository.UserRepository;
 import com.muje.capstone.service.UserDetailService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
@@ -72,7 +71,7 @@ public class WebOAuthSecurityConfig {
                         )
                 )
                 .addFilterBefore(tokenAuthenticationFilter(), UsernamePasswordAuthenticationFilter.class)
-                .cors(Customizer.withDefaults()); // 최신 방식으로 CORS 설정
+                .cors(Customizer.withDefaults());
 
         return http.build();
     }
@@ -81,8 +80,7 @@ public class WebOAuthSecurityConfig {
     public OAuth2SuccessHandler oAuth2SuccessHandler() {
         return new OAuth2SuccessHandler(tokenProvider,
                 refreshTokenRepository,
-                userDetailService
-                );
+                userDetailService);
     }
 
     @Bean
@@ -103,17 +101,12 @@ public class WebOAuthSecurityConfig {
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
-        // 프론트엔드 주소를 허용 (예: http://localhost:3000)
         configuration.setAllowedOrigins(List.of("http://localhost:3000"));
-        // 필요한 HTTP 메서드 설정
         configuration.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS"));
-        // 모든 헤더 허용 (필요에 따라 조정)
         configuration.setAllowedHeaders(List.of("*"));
-        // 인증 정보(쿠키 등) 전송 허용 여부 설정
         configuration.setAllowCredentials(true);
 
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
-        // 모든 엔드포인트에 대해 위 설정 적용
         source.registerCorsConfiguration("/**", configuration);
         return source;
     }

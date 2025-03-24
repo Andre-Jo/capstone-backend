@@ -28,31 +28,27 @@ public class TokenAuthenticationFilter extends OncePerRequestFilter {
             HttpServletResponse response,
             FilterChain filterChain) throws ServletException, IOException {
 
-        // public 엔드포인트라면 토큰 검증 로직 스킵
+        // public 엔드포인트는 토큰 검증 로직을 건너뜁니다.
         if (isPublicEndpoint(request)) {
             filterChain.doFilter(request, response);
             return;
         }
 
         // 쿠키에서 accessToken, refreshToken 값을 추출
-        String accessToken = getAccessTokenFromCookie(request);
-        String refreshToken = getRefreshTokenFromCookie(request);
+        String accessToken = getTokenFromCookie(request, ACCESS_TOKEN_COOKIE);
+        String refreshToken = getTokenFromCookie(request, REFRESH_TOKEN_COOKIE);
 
-        // 엑세스 토큰이 유효하면 인증 정보를 설정
+        // 액세스 토큰 검증 및 인증 처리
         if (accessToken != null && tokenProvider.validToken(accessToken)) {
             Authentication authentication = tokenProvider.getAuthentication(accessToken);
             SecurityContextHolder.getContext().setAuthentication(authentication);
         } else if (refreshToken != null && tokenProvider.validToken(refreshToken)) {
-            // 엑세스 토큰이 만료되었거나 유효하지 않으면 리프레시 토큰을 사용하여 엑세스 토큰 재발급
             try {
                 String newAccessToken = tokenService.createNewAccessToken(refreshToken);
-                // 새로운 엑세스 토큰을 쿠키에 저장
                 CookieUtil.addCookie(response, ACCESS_TOKEN_COOKIE, newAccessToken, (int) Duration.ofHours(2).toSeconds());
-                // 인증 정보를 설정
                 Authentication authentication = tokenProvider.getAuthentication(newAccessToken);
                 SecurityContextHolder.getContext().setAuthentication(authentication);
             } catch (IllegalArgumentException e) {
-                // 리프레시 토큰도 유효하지 않으면 재로그인 유도
                 response.sendError(HttpServletResponse.SC_UNAUTHORIZED, "Token is invalid or expired.");
                 return;
             }
@@ -60,40 +56,24 @@ public class TokenAuthenticationFilter extends OncePerRequestFilter {
         filterChain.doFilter(request, response);
     }
 
-    // public 엔드포인트 (예, 회원가입, 로그인 등) 판단 로직
     private boolean isPublicEndpoint(HttpServletRequest request) {
         String uri = request.getRequestURI();
-        // API가 아닌 경우에는 건너뛰기
         if (!uri.startsWith("/api")) {
             return true;
         }
-        // /api/auth/** 중 단, 인증 필요 엔드포인트(ex. /api/auth/me)는 제외
         if (uri.startsWith("/api/auth/") && !uri.equals("/api/auth/me")) {
             return true;
         }
-        // 토큰 재발급이나 OAuth2 관련 엔드포인트도 건너뛰기
         if (uri.startsWith("/oauth2")) {
             return true;
         }
         return false;
     }
 
-    // 쿠키에서 특정 이름의 토큰 값을 추출하는 메서드
-    private String getAccessTokenFromCookie(HttpServletRequest request) {
+    private String getTokenFromCookie(HttpServletRequest request, String cookieName) {
         if (request.getCookies() != null) {
             for (Cookie cookie : request.getCookies()) {
-                if (ACCESS_TOKEN_COOKIE.equals(cookie.getName())) {
-                    return cookie.getValue();
-                }
-            }
-        }
-        return null;
-    }
-
-    private String getRefreshTokenFromCookie(HttpServletRequest request) {
-        if (request.getCookies() != null) {
-            for (Cookie cookie : request.getCookies()) {
-                if (REFRESH_TOKEN_COOKIE.equals(cookie.getName())) {
+                if (cookieName.equals(cookie.getName())) {
                     return cookie.getValue();
                 }
             }

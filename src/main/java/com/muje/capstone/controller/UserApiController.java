@@ -4,6 +4,8 @@ import com.muje.capstone.dto.*;
 import com.muje.capstone.service.AuthenticationService;
 import com.muje.capstone.service.LogoutService;
 import com.muje.capstone.service.UserService;
+import com.muje.capstone.util.CookieUtil;
+import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
@@ -13,8 +15,14 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.oauth2.core.user.DefaultOAuth2User;
 import org.springframework.security.oauth2.core.user.OAuth2User;
+import org.springframework.util.SerializationUtils;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.util.WebUtils;
+
+import java.util.Base64;
+import java.util.Optional;
 
 @RequiredArgsConstructor
 @RestController
@@ -54,14 +62,22 @@ public class UserApiController {
     }
 
     @GetMapping("/social-user")
-    public ResponseEntity<OAuth2UserResponse> getSocialUserInfo(@AuthenticationPrincipal OAuth2User oAuth2User) {
-        OAuth2UserResponse userResponse = userService.getSocialUserInfo(oAuth2User);
+    public ResponseEntity<OAuth2UserResponse> getSocialUserInfo(HttpServletRequest request) {
+        String cookieValue = "rO0ABXNyAChjb20ubXVqZS5jYXBzdG9uZS5kdG8uT0F1dGgyVXNlclJlc3BvbnNlAAAAAAAAAAECAANMAAVlbWFpbHQAEkxqYXZhL2xhbmcvU3RyaW5nO0wACG5pY2tuYW1lcQB-AAFMAAxwcm9maWxlSW1hZ2VxAH4AAXhwdAAVam9hbmRyZTk5MTFAZ21haWwuY29tdAAM7KGw7JWI65Oc66CIdABgaHR0cHM6Ly9saDMuZ29vZ2xldXNlcmNvbnRlbnQuY29tL2EvQUNnOG9jSmpIUXJHaVZ1NEhiblE5SXdUa01ydmYzUkU0VTJ5S19WVGVlZFVrQVBwSHNkZThnPXM5Ni1j"; // 브라우저 개발자 도구에서 "socialUserInfo" 쿠키 값 복사
+        byte[] data = Base64.getUrlDecoder().decode(cookieValue);
+        Object obj = SerializationUtils.deserialize(data);
 
-        if (userResponse == null) {
+        Optional<String> serializedUser = CookieUtil.getCookie(request, "socialUserInfo");
+        if (serializedUser.isEmpty()) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
         }
-
-        return ResponseEntity.ok(userResponse);
+        try {
+            OAuth2UserResponse userResponse = CookieUtil.deserialize(serializedUser.get(), OAuth2UserResponse.class);
+            return ResponseEntity.ok(userResponse);
+        } catch (Exception e) {
+            e.printStackTrace(); // 또는 로깅 프레임워크 사용
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+        }
     }
 
     @GetMapping("/me")
@@ -73,7 +89,6 @@ public class UserApiController {
         String email = authentication.getName();
         try {
             UserInfoResponse response = userService.getUserInfoByEmail(email);
-            System.out.println(response);
             return ResponseEntity.ok(response);
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body("사용자 정보를 찾을 수 없습니다.");

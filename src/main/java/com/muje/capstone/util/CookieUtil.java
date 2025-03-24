@@ -13,14 +13,11 @@ public class CookieUtil {
 
     public static void addCookie(HttpServletResponse response, String name, String value, int maxAge) {
         Cookie cookie = new Cookie(name, value);
-        cookie.setHttpOnly(true);   // 쿠키를 JavaScript에서 접근할 수 없도록 설정
-        cookie.setSecure(true);     // HTTPS 환경에서만 쿠키를 전송
-        cookie.setPath("/");        // 전체 경로에서 쿠키를 사용할 수 있도록 설정
-        cookie.setMaxAge(maxAge);   // 쿠키 만료 시간 설정
-
-        // SameSite 설정 (CSRF 방어)
-        cookie.setAttribute("SameSite", "Strict"); // 또는 "Lax"로 설정 가능
-
+        cookie.setHttpOnly(true);
+        cookie.setSecure("prod".equals(System.getenv("SPRING_PROFILES_ACTIVE"))); // 프로덕션에서만 true
+        cookie.setPath("/");
+        cookie.setMaxAge(maxAge);
+        cookie.setAttribute("SameSite", "Lax"); // Lax로 설정
         response.addCookie(cookie);
     }
 
@@ -61,5 +58,21 @@ public class CookieUtil {
         return cls.cast(
                 SerializationUtils.deserialize(Base64.getUrlDecoder().decode(cookie.getValue()))
         );
+    }
+
+    public static <T> T deserialize(String cookieValue, Class<T> cls) {
+        try {
+            byte[] data = Base64.getUrlDecoder().decode(cookieValue);
+            Object deserializedObject = SerializationUtils.deserialize(data);
+            if (cls.isInstance(deserializedObject)) {
+                return cls.cast(deserializedObject);
+            } else {
+                throw new IllegalArgumentException("Failed to cast to the desired class: " + cls.getName() +
+                        ", 실제 클래스: " + deserializedObject.getClass().getName());
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+            throw new IllegalArgumentException("Deserialization failed", e);
+        }
     }
 }
