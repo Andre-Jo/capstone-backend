@@ -29,6 +29,7 @@ public class LogoutService {
         // 쿠키 삭제
         CookieUtil.deleteCookie(request, response, "accessToken");
         CookieUtil.deleteCookie(request, response, "refreshToken");
+        CookieUtil.deleteCookie(request, response, "socialUserInfo");
 
         // Spring Security 로그아웃 처리
         new SecurityContextLogoutHandler().logout(request, response, SecurityContextHolder.getContext().getAuthentication());

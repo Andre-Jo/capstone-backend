@@ -5,23 +5,14 @@ import com.muje.capstone.service.AuthenticationService;
 import com.muje.capstone.service.LogoutService;
 import com.muje.capstone.service.UserService;
 import com.muje.capstone.util.CookieUtil;
-import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
-import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.core.Authentication;
-import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import org.springframework.security.oauth2.core.user.DefaultOAuth2User;
-import org.springframework.security.oauth2.core.user.OAuth2User;
-import org.springframework.util.SerializationUtils;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.util.WebUtils;
-
-import java.util.Base64;
 import java.util.Optional;
 
 @RequiredArgsConstructor
@@ -34,7 +25,7 @@ public class UserApiController {
     private final AuthenticationService authenticationService;
 
     @PostMapping("/signup")
-    public ResponseEntity<?> signup(@Valid @RequestBody AddUserRequest request) {
+    public ResponseEntity<?> signup(@RequestBody AddUserRequest request) {
         try {
             userService.save(request);
             return ResponseEntity.status(HttpStatus.CREATED).body("회원가입 성공");
