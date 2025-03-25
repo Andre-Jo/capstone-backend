@@ -2,6 +2,7 @@ package com.muje.capstone.service;
 
 import com.univcert.api.UnivCert;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import java.io.IOException;
@@ -10,6 +11,9 @@ import java.util.Map;
 @RequiredArgsConstructor
 @Service
 public class UnivService {
+
+    @Value("${univcert.api-key}")
+    private String apiKey;
 
     public boolean isUniversityValid(String univName) {
         try {

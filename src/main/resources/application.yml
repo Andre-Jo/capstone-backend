@@ -38,3 +38,6 @@ jwt:
 
 frontend:
   base-url: "http://localhost:3000"
+
+univcert:
+  api-key: b2dbc1c6-3604-41fa-8bc9-5a36cc0f1dfc
