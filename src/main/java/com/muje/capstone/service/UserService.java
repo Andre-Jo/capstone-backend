@@ -39,10 +39,11 @@ public class UserService {
                     .nickname(dto.getNickname())
                     .school(dto.getSchool())
                     .department(dto.getDepartment())
+                    .studentYear(dto.getStudentYear())
                     .userType(dto.getUserType())
                     .profileImage(dto.getProfileImage())
                     .isSchoolVerified(dto.getIsSchoolVerified())
-                    .studentYear(dto.getStudentYear())
+                    .isSocialLogin(dto.getIsSocialLogin())
                     .build();
         } else if (dto.getUserType() == UserType.GRADUATE) {
             user = Graduate.builder()
@@ -51,9 +52,11 @@ public class UserService {
                     .nickname(dto.getNickname())
                     .school(dto.getSchool())
                     .department(dto.getDepartment())
+                    .studentYear(dto.getStudentYear())
                     .userType(dto.getUserType())
                     .profileImage(dto.getProfileImage())
                     .isSchoolVerified(dto.getIsSchoolVerified())
+                    .isSocialLogin(dto.getIsSocialLogin())
                     .currentCompany(dto.getCurrentCompany())
                     .currentSalary(dto.getCurrentSalary())
                     .skills(dto.getSkills())
@@ -92,6 +95,7 @@ public class UserService {
         LocalDateTime createdAt = user.getCreatedAt();
         LocalDateTime updatedAt = user.getUpdatedAt();
         Boolean isSchoolVerified = user.getIsSchoolVerified();
+        Boolean isSocialLogin = user.getIsSocialLogin();
 
         // 재학생 전용 필드 (STUDENT 타입)
         Boolean isSubscribed = null;
@@ -119,7 +123,7 @@ public class UserService {
 
         return new UserInfoResponse(
                 userEmail, password, nickname, school, department, studentYear, userType, points,
-                profileImage, createdAt, updatedAt, isSchoolVerified,
+                profileImage, createdAt, updatedAt, isSchoolVerified, isSocialLogin,
                 isSubscribed, subscriptionStartDate, subscriptionEndDate,
                 currentCompany, currentSalary, skills, isCompanyVerified
         );

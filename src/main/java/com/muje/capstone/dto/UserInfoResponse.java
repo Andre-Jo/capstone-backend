@@ -20,6 +20,7 @@ public class UserInfoResponse {
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
     private Boolean isSchoolVerified;
+    private Boolean isSocialLogin;
 
     // 재학생 필드
     private Boolean isSubscribed; // 구독 여부

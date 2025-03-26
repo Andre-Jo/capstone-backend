@@ -25,6 +25,7 @@ public class AddUserRequest {
     private String profileImage;
     private Integer studentYear; // 입학년도 (Integer로 변경, null 허용)
     private Boolean isSchoolVerified = false;
+    private Boolean isSocialLogin = false;
 
     // 졸업생만 입력하는 필드
     private String currentCompany; // 현재 회사

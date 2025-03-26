@@ -31,8 +31,8 @@ public class Graduate extends User {
     @Column(name = "is_company_verified")
     private Boolean isCompanyVerified; // 회사 인증 여부
 
-    public Graduate(String email, String password, String nickname, String school, String department, int studentYear, UserType userType, String profileImage, Boolean isSchoolVerified, String currentCompany, String currentSalary, String skills, Boolean isCompanyVerified) {
-        super(email, password, nickname, school, department, studentYear, userType, profileImage, isSchoolVerified);
+    public Graduate(String email, String password, String nickname, String school, String department, int studentYear, UserType userType, String profileImage, Boolean isSchoolVerified, Boolean isSocialLogin, String currentCompany, String currentSalary, String skills, Boolean isCompanyVerified) {
+        super(email, password, nickname, school, department, studentYear, userType, profileImage, isSchoolVerified, isSocialLogin);
         this.currentCompany = currentCompany;
         this.currentSalary = currentSalary;
         this.skills = skills;

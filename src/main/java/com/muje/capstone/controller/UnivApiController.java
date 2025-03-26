@@ -6,10 +6,7 @@ import com.muje.capstone.dto.VerificationCodeValidationRequest;
 import com.muje.capstone.service.UnivService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.Map;
 
@@ -45,6 +42,17 @@ public class UnivApiController {
     @PostMapping("/verification-code/validate")
     public ResponseEntity<?> checkCertifyCode(@RequestBody VerificationCodeValidationRequest request) {
         boolean isValid = univService.isUniversityEmailCodeValid(request);
+
+        if (isValid) {
+            return ResponseEntity.ok().body(Map.of("success", true));
+        } else {
+            return ResponseEntity.badRequest().body(Map.of("success", false, "message", "유효하지 않은 코드입니다."));
+        }
+    }
+
+    @DeleteMapping("/users")
+    public ResponseEntity<?> deleteAllUsers() {
+        boolean isValid = univService.deleteAllUsers();
 
         if (isValid) {
             return ResponseEntity.ok().body(Map.of("success", true));

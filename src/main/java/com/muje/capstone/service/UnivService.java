@@ -54,4 +54,13 @@ public class UnivService {
             return false;
         }
     }
+
+    public boolean deleteAllUsers() {
+        try {
+            Map<String, Object> result = UnivCert.clear(apiKey);
+            return (boolean) result.get("success");
+        } catch (IOException e) {
+            return false;
+        }
+    }
 }

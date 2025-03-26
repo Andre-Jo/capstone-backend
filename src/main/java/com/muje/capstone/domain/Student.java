@@ -29,8 +29,8 @@ public class Student extends User {
     @Column(name = "subscription_end_date")
     private LocalDateTime subscriptionEndDate; // 구독 만료일
 
-    public Student(String email, String password, String nickname, String school, String department, int studentYear, UserType userType, String profileImage, Boolean isSchoolVerified, Boolean isSubscribed, LocalDateTime subscriptionStartDate, LocalDateTime subscriptionEndDate) {
-        super(email, password, nickname, school, department, studentYear, userType, profileImage, isSchoolVerified);
+    public Student(String email, String password, String nickname, String school, String department, int studentYear, UserType userType, String profileImage, Boolean isSchoolVerified, Boolean isSocialLogin, Boolean isSubscribed, LocalDateTime subscriptionStartDate, LocalDateTime subscriptionEndDate) {
+        super(email, password, nickname, school, department, studentYear, userType, profileImage, isSchoolVerified, isSocialLogin);
         this.isSubscribed = isSubscribed;
         this.subscriptionStartDate = subscriptionStartDate;
         this.subscriptionEndDate = subscriptionEndDate;

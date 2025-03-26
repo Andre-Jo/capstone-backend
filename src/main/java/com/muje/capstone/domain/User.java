@@ -72,7 +72,10 @@ public class User implements UserDetails {
     @Column(name = "is_school_verified")
     private Boolean isSchoolVerified;
 
-    public User(String email, String password, String nickname, String school, String department, int studentYear, UserType userType, String profileImage, Boolean isSchoolVerified) {
+    @Column(name = "is_social_login")
+    private Boolean isSocialLogin;
+
+    public User(String email, String password, String nickname, String school, String department, int studentYear, UserType userType, String profileImage, Boolean isSchoolVerified, Boolean isSocialLogin) {
         this.email = email;
         this.password = password;
         this.nickname = nickname;
@@ -82,6 +85,7 @@ public class User implements UserDetails {
         this.userType = userType;
         this.profileImage = profileImage;
         this.isSchoolVerified = isSchoolVerified;
+        this.isSocialLogin = isSocialLogin;
     }
 
     @Override
