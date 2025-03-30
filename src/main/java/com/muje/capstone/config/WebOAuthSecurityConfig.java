@@ -41,13 +41,6 @@ public class WebOAuthSecurityConfig {
     private final UserDetailService userDetailService;
 
     @Bean
-    public WebSecurityCustomizer configure() {
-        return (web) -> web.ignoring()
-                .requestMatchers(PathRequest.toH2Console())
-                .requestMatchers("/img/**", "/css/**", "/js/**");
-    }
-
-    @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http
                 .csrf(csrf -> csrf.disable())
