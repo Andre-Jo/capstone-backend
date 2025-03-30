@@ -10,7 +10,6 @@ import java.time.LocalDateTime;
 @AllArgsConstructor
 public class UserInfoResponse {
     private String email;
-    private String password;
     private String nickname;
     private String school;
     private String department;

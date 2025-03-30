@@ -36,7 +36,6 @@ public class GraduateReviewApiController {
 
     @GetMapping("/")
     public ResponseEntity<List<GraduateReviewResponse>> findAllGraduateReview(Principal principal) {
-        // 만약 목록 조회 시 로그인된 유저의 정보가 필요하다면 가져옵니다.
         UserInfoResponse userInfo = userService.getUserInfoByEmail(principal.getName());
         List<GraduateReviewResponse> responses = graduateReviewService.findAll()
                 .stream()
@@ -46,7 +45,7 @@ public class GraduateReviewApiController {
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<GraduateReviewResponse> findGraduateReview(@PathVariable long id, Principal principal) {
+    public ResponseEntity<GraduateReviewResponse> findGraduateReview(@PathVariable long id) {
         GraduateReview review = graduateReviewService.findById(id);
         UserInfoResponse userInfo = userService.getUserInfoByEmail(review.getGraduate().getEmail());
         return ResponseEntity.ok().body(new GraduateReviewResponse(review, userInfo));

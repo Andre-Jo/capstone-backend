@@ -84,7 +84,6 @@ public class UserService {
 
         // 공통 필드
         String userEmail = user.getEmail();
-        String password = user.getPassword();
         String nickname = user.getNickname();
         String school = user.getSchool();
         String department = user.getDepartment();
@@ -109,12 +108,12 @@ public class UserService {
         String skills = null;
         Boolean isCompanyVerified = null;
 
-        if (user.getUserType() == UserType.STUDENT) {
+        if (user.getUserType() == UserType.STUDENT && user instanceof Student) {
             Student student = (Student) user;
             isSubscribed = student.getIsSubscribed();
             subscriptionStartDate = student.getSubscriptionStartDate();
             subscriptionEndDate = student.getSubscriptionEndDate();
-        } else if (user.getUserType() == UserType.GRADUATE) {
+        } else if (user.getUserType() == UserType.GRADUATE && user instanceof Graduate) {
             Graduate graduate = (Graduate) user;
             currentCompany = graduate.getCurrentCompany();
             currentSalary = graduate.getCurrentSalary();
@@ -123,7 +122,7 @@ public class UserService {
         }
 
         return new UserInfoResponse(
-                userEmail, password, nickname, school, department, studentYear, userType, points,
+                userEmail, nickname, school, department, studentYear, userType, points,
                 profileImage, createdAt, updatedAt, isSchoolVerified, isSocialLogin, enabled,
                 isSubscribed, subscriptionStartDate, subscriptionEndDate,
                 currentCompany, currentSalary, skills, isCompanyVerified

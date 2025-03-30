@@ -31,9 +31,7 @@ public class GraduateReview extends Post {
     }
 
     public void updateReview(String title, String content, Boolean isAnonymous) {
-        // Post의 update 메소드를 호출하여 title과 content를 업데이트
         super.update(title, content);
-        // isAnonymous 값 업데이트
         this.isAnonymous = isAnonymous;
     }
 }

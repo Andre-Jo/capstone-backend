@@ -17,6 +17,7 @@ public class SafeUserInfoResponse {
     private UserType userType;   // STUDENT 또는 GRADUATE
     private String profileImage;
     private Boolean isSchoolVerified;
+    private Boolean enabled;
 
     // 재학생 필드
     private Boolean isSubscribed; // 구독 여부
