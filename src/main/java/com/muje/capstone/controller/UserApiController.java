@@ -67,18 +67,4 @@ public class UserApiController {
         }
     }
 
-    @GetMapping("/me")
-    public ResponseEntity<?> getCurrentUser(Authentication authentication) {
-        if (authentication == null || !authentication.isAuthenticated()) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("인증되지 않은 사용자입니다.");
-        }
-
-        String email = authentication.getName();
-        try {
-            UserInfoResponse response = userService.getUserInfoByEmail(email);
-            return ResponseEntity.ok(response);
-        } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("사용자 정보를 찾을 수 없습니다.");
-        }
-    }
 }

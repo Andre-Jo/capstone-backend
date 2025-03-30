@@ -13,6 +13,7 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
+import java.util.Optional;
 
 @RequiredArgsConstructor
 @Service
@@ -41,6 +42,7 @@ public class UserService {
                     .profileImage(dto.getProfileImage())
                     .isSchoolVerified(dto.getIsSchoolVerified())
                     .isSocialLogin(dto.getIsSocialLogin())
+                    .enabled(true)
                     .build();
         } else if (dto.getUserType() == UserType.GRADUATE) {
             user = Graduate.builder()
@@ -54,6 +56,7 @@ public class UserService {
                     .profileImage(dto.getProfileImage())
                     .isSchoolVerified(dto.getIsSchoolVerified())
                     .isSocialLogin(dto.getIsSocialLogin())
+                    .enabled(true)
                     .currentCompany(dto.getCurrentCompany())
                     .currentSalary(dto.getCurrentSalary())
                     .skills(dto.getSkills())
@@ -93,6 +96,7 @@ public class UserService {
         LocalDateTime updatedAt = user.getUpdatedAt();
         Boolean isSchoolVerified = user.getIsSchoolVerified();
         Boolean isSocialLogin = user.getIsSocialLogin();
+        Boolean enabled = user.getEnabled();
 
         // 재학생 전용 필드 (STUDENT 타입)
         Boolean isSubscribed = null;
@@ -120,7 +124,7 @@ public class UserService {
 
         return new UserInfoResponse(
                 userEmail, password, nickname, school, department, studentYear, userType, points,
-                profileImage, createdAt, updatedAt, isSchoolVerified, isSocialLogin,
+                profileImage, createdAt, updatedAt, isSchoolVerified, isSocialLogin, enabled,
                 isSubscribed, subscriptionStartDate, subscriptionEndDate,
                 currentCompany, currentSalary, skills, isCompanyVerified
         );
@@ -133,6 +137,18 @@ public class UserService {
             return (Graduate) user;
         } else {
             throw new IllegalArgumentException("User is not a Graduate");
+        }
+    }
+
+    public void deactivateUser(String email) {
+        Optional<User> userOptional = userRepository.findByEmail(email);
+
+        if (userOptional.isPresent()) {
+            User userToDeactivate = userOptional.get();
+            userToDeactivate.setEnabled(false);
+            userRepository.save(userToDeactivate);
+        } else {
+            throw new IllegalArgumentException("User not found with email: " + email);
         }
     }
 }

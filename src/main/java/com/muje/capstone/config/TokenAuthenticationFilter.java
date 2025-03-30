@@ -61,7 +61,7 @@ public class TokenAuthenticationFilter extends OncePerRequestFilter {
         if (!uri.startsWith("/api")) {
             return true;
         }
-        if (uri.startsWith("/api/auth/") && !uri.equals("/api/auth/me")) {
+        if (uri.startsWith("/api/auth/")) {
             return true;
         }
         if (uri.startsWith("/oauth2") && uri.startsWith("/api/univ/")) {

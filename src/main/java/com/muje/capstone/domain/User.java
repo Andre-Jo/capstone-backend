@@ -74,6 +74,10 @@ public class User implements UserDetails {
     @Column(name = "is_social_login")
     private Boolean isSocialLogin;
 
+    @Column(name = "is_enabled") // 추가된 필드
+    @Builder.Default
+    private Boolean enabled = true; // 기본값으로 true 설정
+
     public User(String email, String password, String nickname, String school, String department, int studentYear, UserType userType, String profileImage, Boolean isSchoolVerified, Boolean isSocialLogin) {
         this.email = email;
         this.password = password;
@@ -118,12 +122,16 @@ public class User implements UserDetails {
     }
 
     @Override
-    public boolean isEnabled() {
-        return true; // 계정 사용 가능
+    public boolean isEnabled() { // 수정된 메서드
+        return enabled;
     }
 
     public User update(String nickname) {
         this.nickname = nickname;
         return this;
+    }
+
+    public void setEnabled(Boolean enabled) { // enabled 필드에 대한 setter 추가
+        this.enabled = enabled;
     }
 }

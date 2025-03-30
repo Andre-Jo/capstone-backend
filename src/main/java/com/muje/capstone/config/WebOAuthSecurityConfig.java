@@ -48,7 +48,6 @@ public class WebOAuthSecurityConfig {
                 .authorizeHttpRequests(auth -> auth
                         // 자체 로그인, 토큰 재발급, OAuth2 관련 엔드포인트는 permit
                         .requestMatchers("/api/auth/**", "/oauth2/**", "/api/univ/**").permitAll()
-                        .requestMatchers("/api/auth/me").authenticated()
                         .requestMatchers("/api/**").authenticated()
                         .anyRequest().permitAll()
                 )
