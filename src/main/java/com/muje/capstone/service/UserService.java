@@ -5,12 +5,9 @@ import com.muje.capstone.domain.Graduate;
 import com.muje.capstone.domain.Student;
 import com.muje.capstone.dto.AddUserRequest;
 import com.muje.capstone.dto.UserInfoResponse;
-import com.muje.capstone.dto.UserType;
+import com.muje.capstone.domain.UserType;
 import com.muje.capstone.repository.UserRepository;
-import com.muje.capstone.util.CookieUtil;
 import jakarta.persistence.EntityNotFoundException;
-import jakarta.servlet.http.HttpServletRequest;
-import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -127,5 +124,15 @@ public class UserService {
                 isSubscribed, subscriptionStartDate, subscriptionEndDate,
                 currentCompany, currentSalary, skills, isCompanyVerified
         );
+    }
+
+    public Graduate getGraduateByEmail(String email) {
+        User user = userRepository.findByEmail(email)
+                .orElseThrow(() -> new IllegalArgumentException("Graduate not found with email: " + email));
+        if (user.getUserType() == UserType.GRADUATE) {
+            return (Graduate) user;
+        } else {
+            throw new IllegalArgumentException("User is not a Graduate");
+        }
     }
 }

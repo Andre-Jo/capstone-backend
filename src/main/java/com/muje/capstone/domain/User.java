@@ -1,6 +1,5 @@
 package com.muje.capstone.domain;
 
-import com.muje.capstone.dto.UserType;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.Builder;

@@ -1,4 +1,4 @@
-package com.muje.capstone.dto;
+package com.muje.capstone.domain;
 
 public enum UserType {
     STUDENT, GRADUATE

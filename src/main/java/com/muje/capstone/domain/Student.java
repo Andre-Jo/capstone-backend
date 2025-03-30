@@ -1,18 +1,16 @@
 package com.muje.capstone.domain;
 
-import com.muje.capstone.dto.UserType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Table;
 import lombok.AccessLevel;
-import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.experimental.SuperBuilder;
 
 import java.time.LocalDateTime;
 
-@Table(name = "student")
+@Table(name = "Students")
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @Getter
 @Entity

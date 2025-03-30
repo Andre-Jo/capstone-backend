@@ -5,57 +5,54 @@ import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.experimental.SuperBuilder;
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.LastModifiedDate;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 import java.time.LocalDateTime;
 
-@Table(name = "Posts")
-@Getter
-@NoArgsConstructor(access = AccessLevel.PROTECTED)
 @Entity
-@EntityListeners(AuditingEntityListener.class) // Auditing 기능 활성화
-public class Post {
+@Table(name = "Posts")
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
+@Getter
+@Inheritance(strategy = InheritanceType.JOINED) // 상속 받은 서브 클래스 id 선언 필요 없음
+@SuperBuilder
+@EntityListeners(AuditingEntityListener.class) // 👈 Auditing 기능 활성화
+public abstract class Post {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "id", updatable = false)
-    private long id;
-
-    @ManyToOne(fetch = FetchType.LAZY) // 지연 로딩 설정 (필수)
-    @JoinColumn(name = "user_id", nullable = false) // FK
-    private User user; // 작성자 정보
-
-    @Column(name = "is_anonymous")
-    private Boolean isAnonymous; // 익명 여부
+    private Long id;
 
     @Column(name = "title", nullable = false)
-    private String title;
+    protected String title;
 
     @Column(name = "content", nullable = false)
-    private String content; // 취업 후기 상세 내용
+    protected String content;
 
     @Column(name = "view_count", nullable = false)
-    private int viewCount = 0; // 조회수
+    @Builder.Default
+    protected int viewCount = 0;
 
     @Column(name = "like_count", nullable = false)
-    private int likeCount = 0; // 좋아요 수
+    @Builder.Default
+    protected int likeCount = 0;
 
     @CreatedDate
-    @Column(name = "created_at")
-    private LocalDateTime createdAt;
+    @Column(name = "created_at", updatable = false)
+    protected LocalDateTime createdAt;
 
     @LastModifiedDate
     @Column(name = "updated_at")
-    private LocalDateTime updatedAt;
+    protected LocalDateTime updatedAt;
 
-    @Builder
-    public Post(User user, Boolean isAnonymous, String title, String content) {
-        this.user = user;
-        this.isAnonymous = isAnonymous;
+    public Post(String title, String content, int viewCount, int likeCount) {
         this.title = title;
         this.content = content;
+        this.viewCount = viewCount;
+        this.likeCount = likeCount;
     }
 
     public void update(String title, String content) {

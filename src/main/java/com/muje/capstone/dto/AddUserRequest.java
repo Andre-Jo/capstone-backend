@@ -1,5 +1,6 @@
 package com.muje.capstone.dto;
 
+import com.muje.capstone.domain.UserType;
 import lombok.Getter;
 import lombok.Setter;
 import jakarta.validation.constraints.Email;
