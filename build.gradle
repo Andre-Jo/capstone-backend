@@ -46,6 +46,8 @@ dependencies {
 	implementation 'org.springframework.boot:spring-boot-starter-oauth2-client'
 	implementation 'mysql:mysql-connector-java:8.0.32'
 	implementation 'com.github.in-seo:univcert:master-SNAPSHOT' // 학교 인증 API
+
+	implementation 'org.mariadb.jdbc:mariadb-java-client:2.7.4' // Maria DB
 }
 
 tasks.named('test') {
