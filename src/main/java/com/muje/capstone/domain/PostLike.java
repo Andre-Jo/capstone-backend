@@ -22,17 +22,14 @@ public class PostLike {
     @Column(name = "id", updatable = false)
     private Long id;
 
-    // 좋아요가 적용된 게시글과의 연관관계 설정
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "post_id", nullable = false)
     private Post post;
 
-    // 좋아요를 누른 사용자와의 연관관계 설정
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id", nullable = false)
     private User user;
 
-    // 좋아요 등록일자
     @CreatedDate
     @Column(name = "created_at", nullable = false, updatable = false)
     private LocalDateTime createdAt;
