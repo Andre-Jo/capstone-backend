@@ -1,5 +1,6 @@
 package com.muje.capstone.dto;
 
+import com.muje.capstone.domain.User;
 import com.muje.capstone.domain.UserType;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -29,4 +30,16 @@ public class SafeUserInfoResponse {
     private String currentSalary;     // 현재 연봉
     private String skills;            // ex. Java, Python...
     private Boolean isCompanyVerified; // 회사 인증 여부
+
+    public SafeUserInfoResponse(User user) {
+        this.email = user.getEmail();
+        this.nickname = user.getNickname();
+        this.school = user.getSchool();
+        this.department = user.getDepartment();
+        this.studentYear = user.getStudentYear();
+        this.userType = user.getUserType();
+        this.profileImage = user.getProfileImage();
+        this.isSchoolVerified = user.getIsSchoolVerified();
+        this.enabled = user.getEnabled();
+    }
 }

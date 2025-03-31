@@ -30,7 +30,7 @@ public class CommentService {
     public List<CommentResponse> getCommentsByPost(Long postId) {
         List<Comment> comments = commentRepository.findByPostId(postId);
         return comments.stream()
-                .map(CommentResponse::new) // 생성자 참조를 직접 사용
+                .map(CommentResponse::new)
                 .collect(Collectors.toList());
     }
 
