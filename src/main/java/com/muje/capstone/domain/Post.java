@@ -40,6 +40,10 @@ public abstract class Post {
     @Builder.Default
     protected int likeCount = 0;
 
+    @Column(name = "comment_count", nullable = false)
+    @Builder.Default
+    protected int commentCount = 0;
+
     @CreatedDate
     @Column(name = "created_at", updatable = false)
     protected LocalDateTime createdAt;
@@ -48,15 +52,41 @@ public abstract class Post {
     @Column(name = "updated_at")
     protected LocalDateTime updatedAt;
 
-    public Post(String title, String content, int viewCount, int likeCount) {
+    public Post(String title, String content, int viewCount, int likeCount, int commentCount) {
         this.title = title;
         this.content = content;
         this.viewCount = viewCount;
         this.likeCount = likeCount;
+        this.commentCount = commentCount;
     }
 
     public void update(String title, String content) {
         this.title = title;
         this.content = content;
     }
+
+    public void incrementViewCount() {
+        this.viewCount++;
+    }
+
+    public void incrementLikeCount() {
+        this.likeCount++;
+    }
+
+    public void decrementLikeCount() {
+        if (this.likeCount > 0) {
+            this.likeCount--;
+        }
+    }
+
+    public void incrementCommentCount() {
+        this.commentCount++;
+    }
+
+    public void decrementCommentCount() {
+        if (this.commentCount > 0) {
+            this.commentCount--;
+        }
+    }
+
 }

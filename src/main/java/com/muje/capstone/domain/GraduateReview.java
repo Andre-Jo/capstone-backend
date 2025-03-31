@@ -24,8 +24,8 @@ public class GraduateReview extends Post {
     @JoinColumn(name = "graduate_id")
     private Graduate graduate;
 
-    public GraduateReview(String title, String content, int viewCount, int likeCount, Boolean isAnonymous, Graduate graduate) {
-        super(title, content, viewCount, likeCount);
+    public GraduateReview(String title, String content, int viewCount, int likeCount, int commentCount, Boolean isAnonymous, Graduate graduate) {
+        super(title, content, viewCount, likeCount, commentCount);
         this.isAnonymous = isAnonymous;
         this.graduate = graduate;
     }

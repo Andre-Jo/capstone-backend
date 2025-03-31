@@ -35,11 +35,13 @@ public class GraduateReviewApiController {
     }
 
     @GetMapping("/")
-    public ResponseEntity<List<GraduateReviewResponse>> findAllGraduateReview(Principal principal) {
-        UserInfoResponse userInfo = userService.getUserInfoByEmail(principal.getName());
+    public ResponseEntity<List<GraduateReviewResponse>> findAllGraduateReview() {
         List<GraduateReviewResponse> responses = graduateReviewService.findAll()
                 .stream()
-                .map(review -> new GraduateReviewResponse(review, userInfo))
+                .map(review -> {
+                    UserInfoResponse writerInfo = userService.getUserInfoByEmail(review.getGraduate().getEmail());
+                    return new GraduateReviewResponse(review, writerInfo);
+                })
                 .collect(Collectors.toList());
         return ResponseEntity.ok().body(responses);
     }

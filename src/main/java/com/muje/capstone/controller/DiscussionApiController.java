@@ -32,12 +32,13 @@ public class DiscussionApiController {
     }
 
     @GetMapping("/")
-    public ResponseEntity<List<DiscussionResponse>> findAllDiscussion(Principal principal) {
-        // 만약 목록 조회 시 로그인된 유저의 정보가 필요하다면 가져옵니다.
-        UserInfoResponse userInfo = userService.getUserInfoByEmail(principal.getName());
+    public ResponseEntity<List<DiscussionResponse>> findAllDiscussion() {
         List<DiscussionResponse> responses = discussionService.findAll()
                 .stream()
-                .map(discussion -> new DiscussionResponse(discussion, userInfo))
+                .map(discussion -> {
+                    UserInfoResponse writerInfo = userService.getUserInfoByEmail(discussion.getUser().getEmail());
+                    return new DiscussionResponse(discussion, writerInfo);
+                })
                 .collect(Collectors.toList());
         return ResponseEntity.ok().body(responses);
     }

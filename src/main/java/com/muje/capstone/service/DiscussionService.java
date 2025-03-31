@@ -11,6 +11,7 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.Optional;
 
 @RequiredArgsConstructor
 @Service
@@ -35,9 +36,12 @@ public class DiscussionService {
         return discussionRepository.findAll();
     }
 
+    @Transactional
     public Discussion findById(Long id) {
-        return discussionRepository.findById(id)
+        Discussion discussion = discussionRepository.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException("Discussion not found with id: " + id));
+        discussion.incrementViewCount();
+        return discussion;
     }
 
     public void delete(long id) {
@@ -67,4 +71,5 @@ public class DiscussionService {
             throw new IllegalArgumentException("Not authorized to delete this Discussion");
         }
     }
+
 }

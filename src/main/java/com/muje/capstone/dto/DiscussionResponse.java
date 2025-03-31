@@ -5,12 +5,12 @@ import lombok.Getter;
 
 @Getter
 public class DiscussionResponse {
-
     private final Long id;
     private final String title;
     private final String content;
     private final int viewCount;
     private final int likeCount;
+    private final int commentCount;
     private final String createdAt;
     private final String updatedAt;
     private final Discussion.DiscussionCategory discussionCategory;
@@ -43,6 +43,7 @@ public class DiscussionResponse {
         this.content = discussion.getContent();
         this.viewCount = discussion.getViewCount();
         this.likeCount = discussion.getLikeCount();
+        this.commentCount = discussion.getCommentCount();
         this.createdAt = discussion.getCreatedAt().toString();
         this.updatedAt = discussion.getUpdatedAt().toString();
         this.discussionCategory = discussion.getDiscussionCategory();

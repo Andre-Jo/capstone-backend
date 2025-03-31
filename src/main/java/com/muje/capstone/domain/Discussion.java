@@ -27,8 +27,8 @@ public class Discussion extends Post {
     @JoinColumn(name = "user_id")
     private User user;
 
-    public Discussion(String title, String content, int viewCount, int likeCount, DiscussionCategory discussionCategory, User user) {
-        super(title, content, viewCount, likeCount);
+    public Discussion(String title, String content, int viewCount, int likeCount, int commentCount, DiscussionCategory discussionCategory, User user) {
+        super(title, content, viewCount, likeCount, commentCount);
         this.discussionCategory = discussionCategory;
         this.user = user;
     }

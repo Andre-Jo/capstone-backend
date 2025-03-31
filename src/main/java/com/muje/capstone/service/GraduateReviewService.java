@@ -35,9 +35,12 @@ public class GraduateReviewService {
         return graduateReviewRepository.findAll();
     }
 
+    @Transactional
     public GraduateReview findById(Long id) {
-        return graduateReviewRepository.findById(id)
+        GraduateReview graduateReview = graduateReviewRepository.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException("GraduateReview not found with id: " + id));
+        graduateReview.incrementViewCount();
+        return graduateReview;
     }
 
     public void delete(long id) {
