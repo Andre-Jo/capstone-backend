@@ -134,4 +134,15 @@ public class User implements UserDetails {
     public void setEnabled(Boolean enabled) { // enabled 필드에 대한 setter 추가
         this.enabled = enabled;
     }
+
+    public void addPoints(int amount) {
+        this.points += amount;
+    }
+
+    public void subtractPoints(int amount) {
+        if (this.points < amount) {
+            throw new IllegalArgumentException("Insufficient points.");
+        }
+        this.points -= amount;
+    }
 }
