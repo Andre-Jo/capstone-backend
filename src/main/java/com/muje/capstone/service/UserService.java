@@ -5,7 +5,6 @@ import com.muje.capstone.domain.Graduate;
 import com.muje.capstone.domain.Student;
 import com.muje.capstone.dto.AddUserRequest;
 import com.muje.capstone.dto.UserInfoResponse;
-import com.muje.capstone.domain.UserType;
 import com.muje.capstone.repository.UserRepository;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
@@ -30,7 +29,7 @@ public class UserService {
         BCryptPasswordEncoder encoder = new BCryptPasswordEncoder();
         User user;
 
-        if (dto.getUserType() == UserType.STUDENT) {
+        if (dto.getUserType() == User.UserType.STUDENT) {
             user = Student.builder()
                     .email(dto.getEmail())
                     .password(encoder.encode(dto.getPassword()))
@@ -44,7 +43,7 @@ public class UserService {
                     .isSocialLogin(dto.getIsSocialLogin())
                     .enabled(true)
                     .build();
-        } else if (dto.getUserType() == UserType.GRADUATE) {
+        } else if (dto.getUserType() == User.UserType.GRADUATE) {
             user = Graduate.builder()
                     .email(dto.getEmail())
                     .password(encoder.encode(dto.getPassword()))
@@ -88,7 +87,7 @@ public class UserService {
         String school = user.getSchool();
         String department = user.getDepartment();
         Integer studentYear = user.getStudentYear();
-        UserType userType = user.getUserType();
+        User.UserType userType = user.getUserType();
         Integer points = user.getPoints();
         String profileImage = user.getProfileImage();
         LocalDateTime createdAt = user.getCreatedAt();
@@ -108,12 +107,12 @@ public class UserService {
         String skills = null;
         Boolean isCompanyVerified = null;
 
-        if (user.getUserType() == UserType.STUDENT && user instanceof Student) {
+        if (user.getUserType() == User.UserType.STUDENT && user instanceof Student) {
             Student student = (Student) user;
-            isSubscribed = student.getIsSubscribed();
-            subscriptionStartDate = student.getSubscriptionStartDate();
-            subscriptionEndDate = student.getSubscriptionEndDate();
-        } else if (user.getUserType() == UserType.GRADUATE && user instanceof Graduate) {
+            isSubscribed          = student.getSubscribed();
+            subscriptionStartDate = student.getSubscriptionStart();
+            subscriptionEndDate   = student.getSubscriptionEnd();
+        } else if (user.getUserType() == User.UserType.GRADUATE && user instanceof Graduate) {
             Graduate graduate = (Graduate) user;
             currentCompany = graduate.getCurrentCompany();
             currentSalary = graduate.getCurrentSalary();
@@ -132,7 +131,7 @@ public class UserService {
     public Graduate getGraduateByEmail(String email) {
         User user = userRepository.findByEmail(email)
                 .orElseThrow(() -> new IllegalArgumentException("Graduate not found with email: " + email));
-        if (user.getUserType() == UserType.GRADUATE) {
+        if (user.getUserType() == User.UserType.GRADUATE) {
             return (Graduate) user;
         } else {
             throw new IllegalArgumentException("User is not a Graduate");
@@ -149,5 +148,25 @@ public class UserService {
         } else {
             throw new IllegalArgumentException("User not found with email: " + email);
         }
+    }
+
+    public boolean isGraduate(String email) {
+        return userRepository.findByEmail(email)
+                .filter(user -> user.getUserType() == User.UserType.GRADUATE)
+                .isPresent();
+    }
+
+    public boolean isSubscribedStudent(String email) {
+        User user = findByEmail(email);
+        if (user instanceof Student student) {
+            return Boolean.TRUE.equals(student.getSubscribed())
+                    && student.getSubscriptionEnd() != null
+                    && !student.getSubscriptionEnd().isBefore(LocalDateTime.now());
+        }
+        return false;
+    }
+
+    public boolean canViewGraduateReviews(String email) {
+        return isGraduate(email) || isSubscribedStudent(email);
     }
 }

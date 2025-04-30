@@ -22,20 +22,23 @@ import java.util.stream.Collectors;
 public class GraduateReviewApiController {
 
     private final GraduateReviewService graduateReviewService;
-    private final UserService userService; // 로그인된 유저 정보를 조회하기 위한 서비스
+    private final UserService userService;
 
     @PostMapping("/")
     public ResponseEntity<?> addGraduateReview(@RequestBody AddGraduateReviewRequest request, Principal principal) {
-        try {
-            graduateReviewService.save(request, principal.getName());
-            return ResponseEntity.status(HttpStatus.CREATED).body("취업 후기 작성 성공");
-        } catch (IllegalArgumentException e) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
+        if (!userService.isGraduate(principal.getName())) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).body("Only graduates can write reviews.");
         }
+        graduateReviewService.save(request, principal.getName());
+        return ResponseEntity.status(HttpStatus.CREATED).body("취업 후기 작성 성공");
     }
 
     @GetMapping("/")
-    public ResponseEntity<List<GraduateReviewResponse>> findAllGraduateReview() {
+    public ResponseEntity<?> findAllGraduateReview(Principal principal) {
+        if (!userService.canViewGraduateReviews(principal.getName())) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).body("접근 권한이 없습니다.");
+        }
+
         List<GraduateReviewResponse> responses = graduateReviewService.findAll()
                 .stream()
                 .map(review -> {
@@ -43,15 +46,21 @@ public class GraduateReviewApiController {
                     return new GraduateReviewResponse(review, writerInfo);
                 })
                 .collect(Collectors.toList());
+
         return ResponseEntity.ok().body(responses);
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<GraduateReviewResponse> findGraduateReview(@PathVariable long id) {
+    public ResponseEntity<?> findGraduateReview(@PathVariable long id, Principal principal) {
+        if (!userService.canViewGraduateReviews(principal.getName())) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).body("접근 권한이 없습니다.");
+        }
+
         GraduateReview review = graduateReviewService.findById(id);
         UserInfoResponse userInfo = userService.getUserInfoByEmail(review.getGraduate().getEmail());
         return ResponseEntity.ok().body(new GraduateReviewResponse(review, userInfo));
     }
+
 
     @DeleteMapping("/{id}")
     public ResponseEntity<?> deleteGraduateReview(@PathVariable long id) {

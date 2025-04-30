@@ -1,6 +1,6 @@
 package com.muje.capstone.dto;
 
-import com.muje.capstone.domain.UserType;
+import com.muje.capstone.domain.User;
 import lombok.Getter;
 import lombok.Setter;
 import jakarta.validation.constraints.Email;
@@ -22,7 +22,7 @@ public class AddUserRequest {
     @NotBlank(message = "학과는 필수 입력 값입니다.")
     private String department;
     @NotNull(message = "사용자 유형은 필수 입력 값입니다.")
-    private UserType userType; // STUDENT or GRADUATE
+    private User.UserType userType; // STUDENT or GRADUATE
     private String profileImage;
     private Integer studentYear; // 입학년도 (Integer로 변경, null 허용)
     private Boolean isSchoolVerified = false;

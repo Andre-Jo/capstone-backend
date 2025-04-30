@@ -5,6 +5,7 @@ import com.muje.capstone.service.TokenService;
 import com.muje.capstone.config.oauth.OAuth2SuccessHandler;
 import com.muje.capstone.repository.RefreshTokenRepository;
 import com.muje.capstone.service.UserDetailService;
+import com.muje.capstone.util.SubscriptionUtil;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.security.servlet.PathRequest;
@@ -39,6 +40,7 @@ public class WebOAuthSecurityConfig {
     private final TokenService tokenService;
     private final RefreshTokenRepository refreshTokenRepository;
     private final UserDetailService userDetailService;
+    private final SubscriptionUtil subscriptionUtil;
 
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
@@ -72,12 +74,13 @@ public class WebOAuthSecurityConfig {
     public OAuth2SuccessHandler oAuth2SuccessHandler() {
         return new OAuth2SuccessHandler(tokenProvider,
                 refreshTokenRepository,
-                userDetailService);
+                userDetailService,
+                subscriptionUtil);
     }
 
     @Bean
     public TokenAuthenticationFilter tokenAuthenticationFilter() {
-        return new TokenAuthenticationFilter(tokenProvider, tokenService);
+        return new TokenAuthenticationFilter(tokenProvider, tokenService, subscriptionUtil);
     }
 
     @Bean
@@ -93,7 +96,7 @@ public class WebOAuthSecurityConfig {
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
-        configuration.setAllowedOrigins(List.of("http://localhost:3000"));
+        configuration.setAllowedOrigins(List.of(frontendBaseUrl, "http://127.0.0.1:5500"));
         configuration.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS"));
         configuration.setAllowedHeaders(List.of("*"));
         configuration.setAllowCredentials(true);

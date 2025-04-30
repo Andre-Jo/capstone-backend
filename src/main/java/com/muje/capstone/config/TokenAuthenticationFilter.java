@@ -3,6 +3,7 @@ package com.muje.capstone.config;
 import com.muje.capstone.config.jwt.TokenProvider;
 import com.muje.capstone.service.TokenService;
 import com.muje.capstone.util.CookieUtil;
+import com.muje.capstone.util.SubscriptionUtil;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
@@ -19,6 +20,7 @@ import java.time.Duration;
 public class TokenAuthenticationFilter extends OncePerRequestFilter {
     private final TokenProvider tokenProvider;
     private final TokenService tokenService;
+    private final SubscriptionUtil subscriptionUtil;
     private final static String ACCESS_TOKEN_COOKIE = "accessToken";
     private final static String REFRESH_TOKEN_COOKIE = "refreshToken";
 
@@ -42,12 +44,14 @@ public class TokenAuthenticationFilter extends OncePerRequestFilter {
         if (accessToken != null && tokenProvider.validToken(accessToken)) {
             Authentication authentication = tokenProvider.getAuthentication(accessToken);
             SecurityContextHolder.getContext().setAuthentication(authentication);
+            subscriptionUtil.checkAndExpireSubscription(authentication); // 👈 요 함수 추가
         } else if (refreshToken != null && tokenProvider.validToken(refreshToken)) {
             try {
                 String newAccessToken = tokenService.createNewAccessToken(refreshToken);
                 CookieUtil.addCookie(response, ACCESS_TOKEN_COOKIE, newAccessToken, (int) Duration.ofHours(2).toSeconds());
                 Authentication authentication = tokenProvider.getAuthentication(newAccessToken);
                 SecurityContextHolder.getContext().setAuthentication(authentication);
+                subscriptionUtil.checkAndExpireSubscription(authentication);
             } catch (IllegalArgumentException e) {
                 response.sendError(HttpServletResponse.SC_UNAUTHORIZED, "Token is invalid or expired.");
                 return;
@@ -80,4 +84,5 @@ public class TokenAuthenticationFilter extends OncePerRequestFilter {
         }
         return null;
     }
+
 }

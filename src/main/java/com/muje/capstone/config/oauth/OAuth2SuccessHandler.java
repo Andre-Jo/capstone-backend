@@ -7,6 +7,7 @@ import com.muje.capstone.dto.OAuth2UserResponse;
 import com.muje.capstone.repository.RefreshTokenRepository;
 import com.muje.capstone.service.UserDetailService;
 import com.muje.capstone.util.CookieUtil;
+import com.muje.capstone.util.SubscriptionUtil;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
@@ -39,6 +40,7 @@ public class OAuth2SuccessHandler extends SimpleUrlAuthenticationSuccessHandler 
     private final TokenProvider tokenProvider;
     private final RefreshTokenRepository refreshTokenRepository;
     private final UserDetailService userDetailService;
+    private final SubscriptionUtil subscriptionUtil;
 
     @Override
     public void onAuthenticationSuccess(HttpServletRequest request, HttpServletResponse response,
@@ -77,8 +79,11 @@ public class OAuth2SuccessHandler extends SimpleUrlAuthenticationSuccessHandler 
         CookieUtil.addCookie(response, REFRESH_TOKEN_COOKIE_NAME, refreshToken, (int) REFRESH_TOKEN_DURATION.toSeconds());
 
         // SecurityContext에 인증 객체 설정
-        Authentication auth = new UsernamePasswordAuthenticationToken(user.getEmail(), null, user.getAuthorities());
+        Authentication auth = new UsernamePasswordAuthenticationToken(user, null, user.getAuthorities());
+
         SecurityContextHolder.getContext().setAuthentication(auth);
+
+        subscriptionUtil.checkAndExpireSubscription(auth);
     }
 
     // 리프레시 토큰을 DB에 저장

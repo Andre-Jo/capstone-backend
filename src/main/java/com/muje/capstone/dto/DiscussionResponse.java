@@ -27,10 +27,7 @@ public class DiscussionResponse {
                 originalUserInfo.getUserType(),
                 originalUserInfo.getProfileImage(),
                 originalUserInfo.getIsSchoolVerified(),
-                originalUserInfo.getEnabled(),
-                null, // isSubscribed
-                null, // subscriptionStartDate
-                null, // subscriptionEndDate
+                null,
                 null,
                 null,
                 null,

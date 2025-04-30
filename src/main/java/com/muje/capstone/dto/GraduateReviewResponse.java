@@ -26,10 +26,7 @@ public class GraduateReviewResponse {
                 originalUserInfo.getUserType(),
                 originalUserInfo.getProfileImage(),
                 originalUserInfo.getIsSchoolVerified(),
-                originalUserInfo.getEnabled(),
-                null, // isSubscribed
-                null, // subscriptionStartDate
-                null, // subscriptionEndDate
+                null,
                 originalUserInfo.getCurrentCompany(),
                 originalUserInfo.getCurrentSalary(),
                 originalUserInfo.getSkills(),

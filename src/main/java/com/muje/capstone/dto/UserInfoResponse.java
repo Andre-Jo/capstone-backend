@@ -1,6 +1,6 @@
 package com.muje.capstone.dto;
 
-import com.muje.capstone.domain.UserType;
+import com.muje.capstone.domain.User;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 
@@ -14,7 +14,7 @@ public class UserInfoResponse {
     private String school;
     private String department;
     private Integer studentYear; // 입학년도
-    private UserType userType; // STUDENT or GRADUATE
+    private User.UserType userType; // STUDENT or GRADUATE
     private Integer points;
     private String profileImage;
     private LocalDateTime createdAt;

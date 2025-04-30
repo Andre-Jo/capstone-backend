@@ -1,6 +1,6 @@
 package com.muje.capstone.dto;
 
-import com.muje.capstone.domain.UserType;
+import com.muje.capstone.domain.User;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 
@@ -12,6 +12,6 @@ public class PostLikeResponse {
     private String nickname;
     private String school;
     private String department;
-    private UserType userType;   // STUDENT 또는 GRADUATE
+    private User.UserType userType;   // STUDENT 또는 GRADUATE
     private String profileImage;
 }

@@ -1,5 +1,6 @@
 package com.muje.capstone.domain;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.Builder;
@@ -61,10 +62,12 @@ public class User implements UserDetails {
     private String profileImage;
 
     @CreatedDate
+    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     @Column(name = "created_at")
     private LocalDateTime createdAt;
 
     @LastModifiedDate
+    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     @Column(name = "updated_at")
     private LocalDateTime updatedAt;
 
@@ -89,6 +92,10 @@ public class User implements UserDetails {
         this.profileImage = profileImage;
         this.isSchoolVerified = isSchoolVerified;
         this.isSocialLogin = isSocialLogin;
+    }
+
+    public enum UserType {
+        STUDENT, GRADUATE
     }
 
     @Override
