@@ -1,9 +1,9 @@
 package com.muje.capstone.controller;
 
-import com.muje.capstone.dto.SubscriptionRequest;
+import com.muje.capstone.dto.BillingKeyRequest;
+import com.muje.capstone.dto.SubscriptionHistoryResponse;
 import com.muje.capstone.dto.SubscriptionResponse;
 import com.muje.capstone.service.SubscriptionService;
-import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -15,33 +15,34 @@ import java.util.List;
 @RequestMapping("/api/users/subscriptions")
 @RequiredArgsConstructor
 public class SubscriptionController {
-    private final SubscriptionService subService;
 
-    @PostMapping("/sub")
-    public ResponseEntity<SubscriptionResponse> subscribe(Principal principal,
-                                                          @RequestBody SubscriptionRequest req) throws Exception {
-        return ResponseEntity.ok(
-                subService.subscribe(principal.getName(), req)
-        );
+    private final SubscriptionService svc;
+
+    // 빌링키 등록 + 첫 구독
+    @PostMapping("/register")
+    public SubscriptionResponse register(
+            Principal principal,
+            @RequestBody BillingKeyRequest req
+    ) {
+        return svc.registerBillingKeyAndSubscribe(principal.getName(), req);
     }
 
-    @DeleteMapping
+    // 구독 취소 요청
+    @PostMapping("/cancel")
     public ResponseEntity<Void> cancel(Principal principal) {
-        subService.cancel(principal.getName());
-        return ResponseEntity.noContent().build();
+        svc.requestCancellation(principal.getName());
+        return ResponseEntity.ok().build();
     }
 
+    // 현재 구독 조회
     @GetMapping
-    public ResponseEntity<SubscriptionResponse> current(Principal principal) {
-        SubscriptionResponse res = subService.current(principal.getName());
-        if (res == null) return ResponseEntity.noContent().build();
-        return ResponseEntity.ok(res);
+    public SubscriptionResponse current(Principal principal) {
+        return svc.getCurrent(principal.getName());
     }
 
+    // 구독 이력 조회
     @GetMapping("/history")
-    public ResponseEntity<List<SubscriptionResponse>> history(Principal principal) {
-        return ResponseEntity.ok(
-                subService.history(principal.getName())
-        );
+    public List<SubscriptionHistoryResponse> history(Principal principal) {
+        return svc.getHistory(principal.getName());
     }
 }

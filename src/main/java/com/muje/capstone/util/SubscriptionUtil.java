@@ -15,21 +15,26 @@ public class SubscriptionUtil {
 
     private final UserRepository userRepository;
 
+    /**
+     * 인증된 사용자(Student)에 대해 만료일 체크 후, ACTIVE 상태이면서 만료된 구독은 INACTIVE로 전환합니다.
+     */
     public void checkAndExpireSubscription(Authentication authentication) {
         if (authentication == null) return;
 
         Object principal = authentication.getPrincipal();
         if (principal instanceof User user) {
             if (user instanceof Student student) {
-                LocalDateTime endDate = student.getSubscriptionEndDate();
-                if (Boolean.TRUE.equals(student.getIsSubscribed())
+                LocalDateTime endDate = student.getSubscriptionEnd();
+                if ((student.getSubscriptionStatus() == Student.SubscriptionStatus.ACTIVE
+                        || student.getSubscriptionStatus() == Student.SubscriptionStatus.CANCELLATION_REQUESTED)
                         && endDate != null
                         && endDate.isBefore(LocalDateTime.now())) {
 
-                    student.updateSubscriptionStatus(false, null, null); // 상태 비활성화
+                    student.deactivateSubscription(); // 상태 비활성화
                     userRepository.save(student);
                 }
             }
         }
     }
+
 }

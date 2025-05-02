@@ -1,57 +1,75 @@
 package com.muje.capstone.domain;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.Table;
-import lombok.AccessLevel;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import jakarta.persistence.*;
+import lombok.*;
 import lombok.experimental.SuperBuilder;
 
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
 @Entity
 @Table(name = "students")
-@Getter @Setter
+@Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
+@AllArgsConstructor
 @SuperBuilder
 public class Student extends User {
 
-    @Column(name = "is_subscribed", nullable = false)
-    private Boolean subscribed = false;
+    @Enumerated(EnumType.STRING)
+    @Column(name = "subscription_status", nullable = false)
+    @Builder.Default
+    private SubscriptionStatus subscriptionStatus = SubscriptionStatus.INACTIVE;
 
-    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
+    @Column(name = "subscription_fee", nullable = false, precision = 10, scale = 2)
+    private BigDecimal subscriptionFee;
+
+    @Column(name = "subscription_start")
     private LocalDateTime subscriptionStart;
 
-    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
+    @Column(name = "subscription_end")
     private LocalDateTime subscriptionEnd;
 
-    @Column(name = "billing_key")
+    @Column(name = "billing_key", unique = true)
     private String billingKey;
 
-    @Column(name = "customer_uid")
-    private String customerUid;
+    @Column(name = "customer_key", unique = true, nullable = true) // 최초 생성 시 null일 수 있음
+    private String customerKey;
 
-    public void activateSubscription(LocalDateTime start, LocalDateTime end) {
-        this.subscribed = true;
+    // activateSubscription, renewSubscription, requestCancellation, deactivateSubscription 등 메서드 (이전과 동일)
+    public void activateSubscription(BigDecimal fee, String billingKey, String customerKey, LocalDateTime start, LocalDateTime end) {
+        this.subscriptionStatus = SubscriptionStatus.ACTIVE;
+        this.subscriptionFee = fee;
+        this.billingKey = billingKey;
+        this.customerKey = customerKey;
         this.subscriptionStart = start;
         this.subscriptionEnd = end;
     }
 
-    public void cancelSubscription() {
-        this.subscribed = false;
-        this.subscriptionStart = null;
-        this.subscriptionEnd = null;
-        this.billingKey = null;
-        this.customerUid = null;
+    public void renewSubscription(LocalDateTime newStart, LocalDateTime newEnd) {
+        if (this.subscriptionStatus == SubscriptionStatus.ACTIVE) {
+            this.subscriptionStart = newStart;
+            this.subscriptionEnd = newEnd;
+        } else {
+            System.err.println("비활성 구독 갱신 시도: " + this.customerKey);
+        }
     }
 
-    public void cancelSubscriptionButKeepActiveUntilExpiry() {
-        this.billingKey = null;
-        this.customerUid = null;
-        // 구독 종료일(endDate)은 그대로 두고 isSubscribed는 true 유지
+    public void requestCancellation() {
+        this.subscriptionStatus = SubscriptionStatus.CANCELLATION_REQUESTED;
     }
 
+    public void deactivateSubscription() {
+        this.subscriptionStatus = SubscriptionStatus.INACTIVE;
+    }
+
+    public boolean isSubscriptionActive() {
+        return this.subscriptionStatus == SubscriptionStatus.ACTIVE &&
+                this.subscriptionEnd != null &&
+                LocalDateTime.now().isBefore(this.subscriptionEnd);
+    }
+
+    public enum SubscriptionStatus {
+        ACTIVE, INACTIVE, CANCELLATION_REQUESTED
+    }
 }

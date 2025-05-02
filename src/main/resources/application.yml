@@ -47,6 +47,12 @@ payment:
   api-key: 4325072114463665
   secret-key: kOMyujjgVGXhqYj0bApQS3VnCNU5absrrEhcXHvaS76uQpGP1sj65fKqT58Rgp9tAD3CQM4NejGUCOCu
 
-tosspayment:
+tosspayments:
+  url: https://api.tosspayments.com
   client-key: test_ck_pP2YxJ4K87qe6G1mPqD2VRGZwXLO
   secret-key: test_sk_GjLJoQ1aVZqW0JyQ2z5d3w6KYe2R
+
+logging:
+  level:
+    root: INFO
+    com.muje.capstone.scheduler: INFO

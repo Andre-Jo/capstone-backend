@@ -109,7 +109,7 @@ public class UserService {
 
         if (user.getUserType() == User.UserType.STUDENT && user instanceof Student) {
             Student student = (Student) user;
-            isSubscribed          = student.getSubscribed();
+            isSubscribed = student.isSubscriptionActive();
             subscriptionStartDate = student.getSubscriptionStart();
             subscriptionEndDate   = student.getSubscriptionEnd();
         } else if (user.getUserType() == User.UserType.GRADUATE && user instanceof Graduate) {
@@ -159,7 +159,7 @@ public class UserService {
     public boolean isSubscribedStudent(String email) {
         User user = findByEmail(email);
         if (user instanceof Student student) {
-            return Boolean.TRUE.equals(student.getSubscribed())
+            return student.isSubscriptionActive()
                     && student.getSubscriptionEnd() != null
                     && !student.getSubscriptionEnd().isBefore(LocalDateTime.now());
         }

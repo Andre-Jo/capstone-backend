@@ -1,51 +1,59 @@
 package com.muje.capstone.domain;
 
-import com.fasterxml.jackson.annotation.JsonFormat;
 import jakarta.persistence.*;
 import lombok.*;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.time.OffsetDateTime;
 
 @Entity
 @Table(name = "subscription_histories")
-@Getter @Setter
+@Data
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @AllArgsConstructor
 @Builder
 public class SubscriptionHistory {
-    @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "student_id", nullable = false)
+    @JoinColumn(name = "student_id", nullable = false) // student 테이블의 PK 참조
     private Student student;
 
-    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
-    @Column(name = "start_date", nullable = false)
-    private LocalDateTime startDate;
+    @Column(name = "order_id", nullable = false, unique = true)
+    private String orderId;
 
-    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
-    @Column(name = "end_date", nullable = false)
-    private LocalDateTime endDate;
+    @Column(name = "payment_key")
+    private String paymentKey;
+
+    @Column(name = "subscription_period_start", nullable = false)
+    private LocalDateTime subscriptionPeriodStart;
+
+    @Column(name = "subscription_period_end", nullable = false)
+    private LocalDateTime subscriptionPeriodEnd;
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
     private Status status;
 
-    @Column(name = "transaction_id", nullable = false, unique = true)
-    private String transactionId;
+    @Column(name = "requested_at", nullable = false)
+    private LocalDateTime requestedAt;
+
+    @Column(name = "approved_at")
+    private OffsetDateTime approvedAt;
 
     @Column(nullable = false, precision = 10, scale = 2)
     private BigDecimal amount;
 
-    public enum Status {
-        PENDING, COMPLETED, FAILED, CANCELLED
-    }
+    @Column(name = "failure_code")
+    private String failureCode;
 
-    // 구독 취소 시 상태 변경 메서드
-    public void cancel() {
-        this.status = Status.CANCELLED;
-        this.endDate = LocalDateTime.now();
+    @Column(name = "failure_message", length = 500)
+    private String failureMessage;
+
+    public enum Status {
+        PENDING, SUCCESS, FAILURE
     }
 }
