@@ -15,34 +15,26 @@ import java.util.List;
 @RequestMapping("/api/users/subscriptions")
 @RequiredArgsConstructor
 public class SubscriptionController {
-
     private final SubscriptionService svc;
 
-    // 빌링키 등록 + 첫 구독
     @PostMapping("/register")
-    public SubscriptionResponse register(
-            Principal principal,
-            @RequestBody BillingKeyRequest req
-    ) {
-        return svc.registerBillingKeyAndSubscribe(principal.getName(), req);
+    public SubscriptionResponse register(Principal p, @RequestBody BillingKeyRequest req) {
+        return svc.registerBillingKeyAndSubscribe(p.getName(), req);
     }
 
-    // 구독 취소 요청
     @PostMapping("/cancel")
-    public ResponseEntity<Void> cancel(Principal principal) {
-        svc.requestCancellation(principal.getName());
+    public ResponseEntity<Void> cancel(Principal p) {
+        svc.requestCancellation(p.getName());
         return ResponseEntity.ok().build();
     }
 
-    // 현재 구독 조회
     @GetMapping
-    public SubscriptionResponse current(Principal principal) {
-        return svc.getCurrent(principal.getName());
+    public SubscriptionResponse current(Principal p) {
+        return svc.getCurrent(p.getName());
     }
 
-    // 구독 이력 조회
     @GetMapping("/history")
-    public List<SubscriptionHistoryResponse> history(Principal principal) {
-        return svc.getHistory(principal.getName());
+    public List<SubscriptionHistoryResponse> history(Principal p) {
+        return svc.getHistory(p.getName());
     }
 }

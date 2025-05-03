@@ -1,6 +1,5 @@
 package com.muje.capstone.domain;
 
-import com.fasterxml.jackson.annotation.JsonFormat;
 import jakarta.persistence.*;
 import lombok.*;
 import lombok.experimental.SuperBuilder;
@@ -10,7 +9,7 @@ import java.time.LocalDateTime;
 
 @Entity
 @Table(name = "students")
-@Getter
+@Getter @Setter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @AllArgsConstructor
 @SuperBuilder
@@ -36,7 +35,6 @@ public class Student extends User {
     @Column(name = "customer_key", unique = true, nullable = true) // 최초 생성 시 null일 수 있음
     private String customerKey;
 
-    // activateSubscription, renewSubscription, requestCancellation, deactivateSubscription 등 메서드 (이전과 동일)
     public void activateSubscription(BigDecimal fee, String billingKey, String customerKey, LocalDateTime start, LocalDateTime end) {
         this.subscriptionStatus = SubscriptionStatus.ACTIVE;
         this.subscriptionFee = fee;
@@ -47,6 +45,11 @@ public class Student extends User {
     }
 
     public void renewSubscription(LocalDateTime newStart, LocalDateTime newEnd) {
+        // 추가 안전 검사: 이미 남아있는 기간이 있으면 무시
+        if (this.subscriptionStatus != SubscriptionStatus.ACTIVE ||
+                newStart.isBefore(this.subscriptionEnd)) {
+            return;
+        }
         if (this.subscriptionStatus == SubscriptionStatus.ACTIVE) {
             this.subscriptionStart = newStart;
             this.subscriptionEnd = newEnd;
@@ -64,9 +67,9 @@ public class Student extends User {
     }
 
     public boolean isSubscriptionActive() {
-        return this.subscriptionStatus == SubscriptionStatus.ACTIVE &&
-                this.subscriptionEnd != null &&
-                LocalDateTime.now().isBefore(this.subscriptionEnd);
+        return this.subscriptionStatus == SubscriptionStatus.ACTIVE
+                && this.subscriptionEnd != null
+                && LocalDateTime.now().isBefore(this.subscriptionEnd);
     }
 
     public enum SubscriptionStatus {

@@ -4,7 +4,9 @@ import com.muje.capstone.domain.Student;
 import com.muje.capstone.domain.User;
 import com.muje.capstone.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Component;
 
 import java.time.LocalDateTime;
@@ -25,13 +27,22 @@ public class SubscriptionUtil {
         if (principal instanceof User user) {
             if (user instanceof Student student) {
                 LocalDateTime endDate = student.getSubscriptionEnd();
-                if ((student.getSubscriptionStatus() == Student.SubscriptionStatus.ACTIVE
-                        || student.getSubscriptionStatus() == Student.SubscriptionStatus.CANCELLATION_REQUESTED)
+                if ((student.getSubscriptionStatus() == Student.SubscriptionStatus.CANCELLATION_REQUESTED)
                         && endDate != null
                         && endDate.isBefore(LocalDateTime.now())) {
 
-                    student.deactivateSubscription(); // 상태 비활성화
+                    // 상태 및 구독 날짜 초기화
+                    student.deactivateSubscription();
+                    student.setSubscriptionStart(null);
+                    student.setSubscriptionEnd(null);
+
                     userRepository.save(student);
+
+                    // 인증 객체 업데이트
+                    Authentication newAuth = new UsernamePasswordAuthenticationToken(
+                            student, null, student.getAuthorities()
+                    );
+                    SecurityContextHolder.getContext().setAuthentication(newAuth);
                 }
             }
         }
