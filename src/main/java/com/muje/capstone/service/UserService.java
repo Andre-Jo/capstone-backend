@@ -24,6 +24,10 @@ public class UserService {
         return userRepository.findByEmail(email).isPresent();
     }
 
+    public boolean nicknameExists(String nickname) {
+        return userRepository.findByNickname(nickname).isPresent();
+    }
+
     public Long save(AddUserRequest dto) {
 
         if (userRepository.findByEmail(dto.getEmail()).isPresent()) {

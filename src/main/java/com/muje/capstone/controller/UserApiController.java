@@ -47,6 +47,19 @@ public class UserApiController {
         }
     }
 
+    @PostMapping("/signup/nickname")
+    public ResponseEntity<String> checkNicknameDuplication(@RequestBody NicknameCheckRequest request) {
+        boolean exists = userService.nicknameExists(request.getNickname());
+        if (exists) {
+            return ResponseEntity
+                    .status(HttpStatus.CONFLICT)
+                    .body("이미 사용 중인 닉네임입니다.");
+        } else {
+            return ResponseEntity
+                    .ok("사용 가능한 닉네임입니다.");
+        }
+    }
+
     @PostMapping("/login")
     public ResponseEntity<?> login(@RequestBody LoginRequest request, HttpServletResponse response) {
         try {
