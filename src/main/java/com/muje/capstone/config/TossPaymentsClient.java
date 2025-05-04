@@ -126,21 +126,6 @@ public class TossPaymentsClient {
         }
     }
 
-/*
-    */
-    /**
-     * 구독 해지 (Unsubscribe Billing Key)
-     * DELETE /v1/billing/authorizations/{billingKey}
-     *//*
-
-    public void unsubscribe(String billingKey) {
-        String url = tossApiUrl + "/v1/billing/authorizations/" + billingKey;
-        HttpEntity<Void> entity = new HttpEntity<>(createHeaders());
-        restTemplate.exchange(url, HttpMethod.DELETE, entity, Void.class);
-    }
-*/
-
-
     // Helper DTO for the issue billing key request body
     @Data
     @AllArgsConstructor

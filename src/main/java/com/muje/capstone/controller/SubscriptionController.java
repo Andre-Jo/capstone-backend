@@ -1,8 +1,6 @@
 package com.muje.capstone.controller;
 
-import com.muje.capstone.dto.BillingKeyRequest;
-import com.muje.capstone.dto.SubscriptionHistoryResponse;
-import com.muje.capstone.dto.SubscriptionResponse;
+import com.muje.capstone.dto.*;
 import com.muje.capstone.service.SubscriptionService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -30,8 +28,20 @@ public class SubscriptionController {
 
     // 재구독
     @PostMapping("/resume")
-    public SubscriptionResponse resume(Principal p, @RequestBody BillingKeyRequest req) {
+    public SubscriptionResponse resume(Principal p, @RequestBody ResumeSubscriptionRequest req) {
         return svc.resumeSubscription(p.getName(), req);
+    }
+
+    @PostMapping("/billing-key")
+    public ResponseEntity<Void> registerBillingKey(Principal p, @RequestBody CardRegisterRequest req) {
+        svc.saveBillingKey(p.getName(), req);
+        return ResponseEntity.ok().build();
+    }
+
+    @DeleteMapping("/billing-key")
+    public ResponseEntity<Void> deleteBillingKey(Principal p) {
+        svc.deleteBillingKey(p.getName());
+        return ResponseEntity.ok().build();
     }
 
     @GetMapping

@@ -14,6 +14,8 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.time.LocalTime;
+import java.time.Period;
 import java.util.List;
 import java.util.UUID;
 import org.slf4j.Logger;
@@ -30,9 +32,6 @@ public class SubscriptionService {
 
     private static final Logger log = LoggerFactory.getLogger(SubscriptionService.class);
 
-    /** 구독 기간(초) */
-    private static final long SUBSCRIPTION_PERIOD_SECONDS = 10L;
-
     private Student findStudent(String email) {
         return userRepository.findByEmail(email)
                 .filter(u -> u instanceof Student)
@@ -44,18 +43,22 @@ public class SubscriptionService {
     @Transactional
     public SubscriptionResponse registerBillingKeyAndSubscribe(String email, BillingKeyRequest req) {
         Student s = findStudent(email);
-        if (s.isSubscriptionActive()) throw new RuntimeException("Already subscribed");
+        if (s.isSubscriptionActive()) {
+            throw new RuntimeException("Already subscribed");
+        }
 
         // 1) 빌링키 발급
         var issue = tossPaymentsClient.issueBillingKey(req.getAuthKey(), req.getCustomerKey());
         BigDecimal fee = req.getAmount();
+        int periodDays = req.getPeriod();
 
-        // 2) 첫 결제
-        executePayment(s, issue.getBillingKey(), issue.getCustomerKey(), fee, true);
+        // 2) 결제 실행 (baseStart = now)
+        LocalDateTime baseStart = LocalDateTime.now();
+        executePayment(s, issue.getBillingKey(), issue.getCustomerKey(), fee, true, baseStart, periodDays);
 
-        // 3) 활성화
-        LocalDateTime start = LocalDateTime.now();
-        LocalDateTime end   = start.plusSeconds(SUBSCRIPTION_PERIOD_SECONDS);
+        // 3) 구독 활성화 (만료일은 baseStart + periodDays 의 그날 자정)
+        LocalDateTime start = baseStart;
+        LocalDateTime end   = baseStart.plusDays(periodDays).with(LocalTime.MAX);
         s.activateSubscription(fee, issue.getBillingKey(), issue.getCustomerKey(), start, end);
         studentRepository.save(s);
 
@@ -97,33 +100,67 @@ public class SubscriptionService {
                 .collect(Collectors.toList());
     }
 
+    /** 빌링키 등록 **/
+    @Transactional
+    public void saveBillingKey(String email, CardRegisterRequest req) {
+        Student s = findStudent(email);
+        var issue = tossPaymentsClient.issueBillingKey(req.getAuthKey(), req.getCustomerKey());
+        s.setBillingKey(issue.getBillingKey());
+        s.setCustomerKey(issue.getCustomerKey());
+        studentRepository.save(s);
+    }
+
+    /** 빌링키 삭제 **/
+    @Transactional
+    public void deleteBillingKey(String email) {
+        Student s = findStudent(email);
+
+        if (s.getBillingKey() != null) {
+            s.setBillingKey(null);
+            s.setCustomerKey(null);
+            studentRepository.save(s);
+        }
+    }
+
     /** 스케줄러: 자동 갱신 및 만료 처리 */
-//    @Scheduled(fixedRate = 13000)
-    @Scheduled(cron = "0 0 0 * * ?") // Runs at 12:00:00 AM every day
+    @Scheduled(cron = "0 0 0 * * ?") // 매일 자정
     @Transactional
     public void renewAndExpire() {
         LocalDateTime now = LocalDateTime.now();
 
-        // 1) 자동 갱신 대상: ACTIVE & 만료 시점 지난 사용자
-        var toRenew = studentRepository.findBySubscriptionStatusAndSubscriptionEndBefore(
-                Student.SubscriptionStatus.ACTIVE, now);
-        toRenew.forEach(s -> {
-            if (s.getSubscriptionStatus() == Student.SubscriptionStatus.CANCELLATION_REQUESTED) return;
-            log.info("Auto-renew student {}", s.getId());
-            executePayment(s, s.getBillingKey(), s.getCustomerKey(), s.getSubscriptionFee(), false);
-        });
+        // 1) 갱신: ACTIVE & 만료 지남
+        studentRepository
+                .findBySubscriptionStatusAndSubscriptionEndBefore(Student.SubscriptionStatus.ACTIVE, now)
+                .forEach(s -> {
+                    if (s.getSubscriptionStatus() == Student.SubscriptionStatus.CANCELLATION_REQUESTED) return;
+                    log.info("Auto-renew student {}", s.getId());
 
-        // 2) 만료 처리: CANCELLATION_REQUESTED & 만료 시점 지난 사용자
-        var toExpire = studentRepository.findBySubscriptionStatusAndSubscriptionEndBefore(
-                Student.SubscriptionStatus.CANCELLATION_REQUESTED, now);
-        toExpire.forEach(s -> {
-            s.deactivateSubscription();
-            s.setSubscriptionStart(null);
-            s.setSubscriptionEnd(null);
-            s.setSubscriptionFee(BigDecimal.ZERO);
-            studentRepository.save(s);
-            log.info("Expired cancellation for student {}", s.getId());
-        });
+                    // baseStart = 이전 만료일이 future 면 그 값을, 아니면 now
+                    LocalDateTime baseStart = s.getSubscriptionEnd().isAfter(now)
+                            ? s.getSubscriptionEnd()
+                            : now;
+                    // 기간은 기존에 저장된 fee 대비 request 안 하므로 student.getSubscriptionFeePeriod() 필요시 저장해두세요
+                    int periodDays = Period.between(s.getSubscriptionStart().toLocalDate(), s.getSubscriptionEnd().toLocalDate()).getDays();
+                    executePayment(s, s.getBillingKey(), s.getCustomerKey(), s.getSubscriptionFee(), false, baseStart, periodDays);
+
+                    // 연장: same as above
+                    LocalDateTime start = baseStart;
+                    LocalDateTime end   = baseStart.plusDays(periodDays).with(LocalTime.MAX);
+                    s.activateSubscription(s.getSubscriptionFee(), s.getBillingKey(), s.getCustomerKey(), start, end);
+                    studentRepository.save(s);
+                });
+
+        // 2) 만료: CANCELLATION_REQUESTED & 만료 지남
+        studentRepository
+                .findBySubscriptionStatusAndSubscriptionEndBefore(Student.SubscriptionStatus.CANCELLATION_REQUESTED, now)
+                .forEach(s -> {
+                    s.deactivateSubscription();
+                    s.setSubscriptionStart(null);
+                    s.setSubscriptionEnd(null);
+                    s.setSubscriptionFee(BigDecimal.ZERO);
+                    studentRepository.save(s);
+                    log.info("Expired cancellation for student {}", s.getId());
+                });
     }
 
     /**
@@ -133,22 +170,25 @@ public class SubscriptionService {
      * @param customerKey customerKey
      * @param fee      결제 금액
      * @param initial  최초 결제 여부
+     * @param baseStart   이번 결제의 시작
+     * @param periodDays  구독 기간(일)
      */
     private void executePayment(
             Student s,
             String billingKey,
             String customerKey,
             BigDecimal fee,
-            boolean initial
+            boolean initial,
+            LocalDateTime baseStart,
+            int periodDays
     ) {
-        LocalDateTime now = LocalDateTime.now();
+        LocalDateTime periodStart = baseStart;
+        LocalDateTime periodEnd   = baseStart.plusDays(periodDays).with(LocalTime.MAX);
+        LocalDateTime now         = LocalDateTime.now();
+        String orderId = (initial ? "init_" : "sub_")
+                + s.getId() + "_" + UUID.randomUUID();
 
-        // 1) 주문 ID, 기간 계산
-        String orderId = (initial ? "init_" : "sub_") + s.getId() + "_" + UUID.randomUUID();
-        LocalDateTime periodStart = now;
-        LocalDateTime periodEnd   = now.plusSeconds(SUBSCRIPTION_PERIOD_SECONDS);
-
-        // 2) 히스토리 PENDING 생성
+        // 1) 히스토리 PENDING
         SubscriptionHistory h = SubscriptionHistory.builder()
                 .student(s)
                 .orderId(orderId)
@@ -161,7 +201,7 @@ public class SubscriptionService {
         historyRepository.save(h);
 
         try {
-            // 3) Toss 승인 호출
+            // 2) Toss 승인 호출
             var req = TossBillingApprovalRequest.builder()
                     .amount(fee)
                     .customerKey(customerKey)
@@ -173,21 +213,14 @@ public class SubscriptionService {
                 throw new RuntimeException("Payment failed: " + resp.getStatus());
             }
 
-            // 4) SUCCESS 처리
+            // 3) SUCCESS 처리
             h.setStatus(SubscriptionHistory.Status.SUCCESS);
             h.setPaymentKey(resp.getPaymentKey());
             h.setApprovedAt(resp.getApprovedAt());
-
-            // 5) student 기간 갱신
-            s.renewSubscription(periodStart, periodEnd);
-            studentRepository.save(s);
-
         } catch (Exception ex) {
-            // 6) FAILURE 처리
+            // 4) FAILURE 처리
             h.setStatus(SubscriptionHistory.Status.FAILURE);
             h.setFailureMessage(ex.getMessage());
-
-            // 자동 갱신 중 실패하면 즉시 비활성화
             if (!initial) {
                 s.deactivateSubscription();
                 s.setSubscriptionStart(null);
@@ -203,31 +236,36 @@ public class SubscriptionService {
 
     /** CANCELLATION_REQUESTED 또는 INACTIVE → 재구독 */
     @Transactional
-    public SubscriptionResponse resumeSubscription(String email, BillingKeyRequest req) {
+    public SubscriptionResponse resumeSubscription(String email, ResumeSubscriptionRequest req) {
         Student s = findStudent(email);
-
-        // 1) 상태 검증
         if (s.getSubscriptionStatus() != Student.SubscriptionStatus.CANCELLATION_REQUESTED
                 && s.getSubscriptionStatus() != Student.SubscriptionStatus.INACTIVE) {
-            throw new RuntimeException("재구독할 수 없는 상태: " + s.getSubscriptionStatus());
+            throw new RuntimeException("Cannot resume in state: " + s.getSubscriptionStatus());
         }
-        // 2) 빌링키 검증
-        if (s.getBillingKey() == null || s.getCustomerKey() == null) {
-            throw new RuntimeException("재구독을 위한 빌링키 정보가 없습니다.");
+        if (s.getBillingKey() == null) {
+            throw new RuntimeException("No billing key for resume");
         }
 
         BigDecimal fee = req.getAmount();
+        int periodDays = req.getPeriod();
 
-        // 3) 즉시 결제
-        executePayment(s, s.getBillingKey(), s.getCustomerKey(), fee, false);
+        // baseStart 계산
+        LocalDateTime now = LocalDateTime.now();
+        LocalDateTime subEnd = s.getSubscriptionEnd();
+        LocalDateTime baseStart = (subEnd != null && subEnd.isAfter(now))
+                ? subEnd
+                : now;
 
-        // 4) 재활성화
-        LocalDateTime start = LocalDateTime.now();
-        LocalDateTime end   = start.plusSeconds(SUBSCRIPTION_PERIOD_SECONDS);
+        // 즉시 결제
+        executePayment(s, s.getBillingKey(), s.getCustomerKey(), fee, false, baseStart, periodDays);
+
+        // 재활성화
+        LocalDateTime start = baseStart;
+        LocalDateTime end   = baseStart.plusDays(periodDays).with(LocalTime.MAX);
         s.activateSubscription(fee, s.getBillingKey(), s.getCustomerKey(), start, end);
         studentRepository.save(s);
 
-        return new SubscriptionResponse(
-                s.getId(), s.getCustomerKey(), s.getSubscriptionStatus().name(), start, end);
+        return new SubscriptionResponse(s.getId(), s.getCustomerKey(),
+                s.getSubscriptionStatus().name(), start, end);
     }
 }
