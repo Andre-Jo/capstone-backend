@@ -20,6 +20,10 @@ public class UserService {
 
     private final UserRepository userRepository;
 
+    public boolean emailExists(String email) {
+        return userRepository.findByEmail(email).isPresent();
+    }
+
     public Long save(AddUserRequest dto) {
 
         if (userRepository.findByEmail(dto.getEmail()).isPresent()) {

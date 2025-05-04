@@ -34,6 +34,19 @@ public class UserApiController {
         }
     }
 
+    @PostMapping("/signup/email")
+    public ResponseEntity<String> checkEmailDuplication(@RequestBody EmailCheckRequest request) {
+        boolean exists = userService.emailExists(request.getEmail());
+        if (exists) {
+            return ResponseEntity
+                    .status(HttpStatus.CONFLICT)
+                    .body("이미 사용 중인 이메일입니다.");
+        } else {
+            return ResponseEntity
+                    .ok("사용 가능한 이메일입니다.");
+        }
+    }
+
     @PostMapping("/login")
     public ResponseEntity<?> login(@RequestBody LoginRequest request, HttpServletResponse response) {
         try {
