@@ -28,6 +28,12 @@ public class SubscriptionController {
         return ResponseEntity.ok().build();
     }
 
+    // 재구독
+    @PostMapping("/resume")
+    public SubscriptionResponse resume(Principal p, @RequestBody BillingKeyRequest req) {
+        return svc.resumeSubscription(p.getName(), req);
+    }
+
     @GetMapping
     public SubscriptionResponse current(Principal p) {
         return svc.getCurrent(p.getName());
