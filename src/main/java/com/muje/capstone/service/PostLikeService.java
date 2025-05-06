@@ -23,8 +23,8 @@ public class PostLikeService {
     private final UserRepository userRepository;
 
     @Transactional
-    public boolean toggleLike(Long postId, String username) {
-        User user = userRepository.findByEmail(username)
+    public boolean toggleLike(Long postId, String email) {
+        User user = userRepository.findByEmail(email)
                 .orElseThrow(() -> new RuntimeException("User not found"));
         Post post = postRepository.findById(postId)
                 .orElseThrow(() -> new RuntimeException("Post not found"));

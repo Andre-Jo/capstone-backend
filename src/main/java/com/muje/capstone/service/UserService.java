@@ -66,6 +66,7 @@ public class UserService {
                     .enabled(true)
                     .currentCompany(dto.getCurrentCompany())
                     .currentSalary(dto.getCurrentSalary())
+                    .occupation(dto.getOccupation())
                     .skills(dto.getSkills())
                     .isCompanyVerified(dto.getIsCompanyVerified())
                     .build();
@@ -112,6 +113,7 @@ public class UserService {
         // 졸업생 전용 필드 (GRADUATE 타입)
         String currentCompany = null;
         String currentSalary = null;
+        String occupation = null;
         String skills = null;
         Boolean isCompanyVerified = null;
 
@@ -124,6 +126,7 @@ public class UserService {
             Graduate graduate = (Graduate) user;
             currentCompany = graduate.getCurrentCompany();
             currentSalary = graduate.getCurrentSalary();
+            occupation = graduate.getOccupation();
             skills = graduate.getSkills();
             isCompanyVerified = graduate.getIsCompanyVerified();
         }
@@ -132,7 +135,7 @@ public class UserService {
                 userEmail, nickname, school, department, studentYear, userType, points,
                 profileImage, createdAt, updatedAt, isSchoolVerified, isSocialLogin, enabled,
                 isSubscribed, subscriptionStartDate, subscriptionEndDate,
-                currentCompany, currentSalary, skills, isCompanyVerified
+                currentCompany, currentSalary, occupation, skills, isCompanyVerified
         );
     }
 

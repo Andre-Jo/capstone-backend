@@ -20,21 +20,25 @@ public class CommentController {
     private final CommentService commentService;
 
     @PostMapping
-    public ResponseEntity<Comment> addComment(@PathVariable Long postId,
+    public ResponseEntity<?> addComment(@PathVariable Long postId,
                                               @RequestBody AddCommentRequest addCommentRequest,
                                               Principal principal) {
-        Comment comment = commentService.addComment(postId, addCommentRequest, principal.getName());
-        return ResponseEntity.status(HttpStatus.CREATED).body(comment);
+        try {
+            commentService.addComment(postId, addCommentRequest, principal.getName());
+            return ResponseEntity.status(HttpStatus.CREATED).body("댓글 작성 성공");
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
+        }
     }
 
-    @GetMapping()
+    @GetMapping
     public ResponseEntity<List<CommentResponse>> getComments(@PathVariable Long postId) {
-        List<CommentResponse> comments = commentService.getCommentsByPost(postId);
-        return ResponseEntity.ok(comments);
+        List<CommentResponse> list = commentService.getCommentsByPost(postId);
+        return ResponseEntity.ok(list);
     }
 
     @DeleteMapping("/{commentId}")
-    public ResponseEntity<?> deleteComment(@PathVariable Long commentId) {
+    public ResponseEntity<Void> deleteComment(@PathVariable Long commentId) {
         commentService.deleteComment(commentId);
         return ResponseEntity.ok().build();
     }

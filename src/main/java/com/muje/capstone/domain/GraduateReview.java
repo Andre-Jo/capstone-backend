@@ -20,14 +20,9 @@ public class GraduateReview extends Post {
     @Builder.Default
     private Boolean isAnonymous = false;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "graduate_id")
-    private Graduate graduate;
-
-    public GraduateReview(String title, String content, int viewCount, int likeCount, int commentCount, Boolean isAnonymous, Graduate graduate) {
-        super(title, content, viewCount, likeCount, commentCount);
+    public GraduateReview(User user, String title, String content, int viewCount, int likeCount, int commentCount, Boolean isAnonymous) {
+        super(user, title, content, viewCount, likeCount, commentCount);
         this.isAnonymous = isAnonymous;
-        this.graduate = graduate;
     }
 
     public void updateReview(String title, String content, Boolean isAnonymous) {

@@ -6,7 +6,7 @@ import lombok.Getter;
 
 @Getter
 @AllArgsConstructor
-public class PostLikeResponse {
+public class CommentLikeResponse {
     private Long id;
     private String email;
     private String nickname;

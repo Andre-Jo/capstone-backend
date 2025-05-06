@@ -5,13 +5,12 @@ import com.muje.capstone.domain.User;
 import com.muje.capstone.dto.AddDiscussionRequest;
 import com.muje.capstone.dto.UpdateDiscussionRequest;
 import com.muje.capstone.repository.DiscussionRepository;
-import jakarta.transaction.Transactional;
+import org.springframework.transaction.annotation.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
-import java.util.Optional;
 
 @RequiredArgsConstructor
 @Service
@@ -20,23 +19,27 @@ public class DiscussionService {
     private final DiscussionRepository discussionRepository;
     private final UserService userService;
 
+    @Transactional // 저장 메서드에 트랜잭션 추가
     public Long save(AddDiscussionRequest request, String email) {
-        // UserService를 통해 로그인된 Graduate 정보를 조회합니다.
+
         User user = userService.findByEmail(email);
+
         Discussion discussion = Discussion.builder()
                 .discussionCategory(request.getDiscussionCategory())
                 .title(request.getTitle())
                 .content(request.getContent())
                 .user(user)
                 .build();
+
         return discussionRepository.save(discussion).getId();
     }
 
+    @Transactional(readOnly = true)
     public List<Discussion> findAll() {
         return discussionRepository.findAll();
     }
 
-    @Transactional
+    @Transactional(readOnly = true)
     public Discussion findById(Long id) {
         Discussion discussion = discussionRepository.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException("Discussion not found with id: " + id));
@@ -44,6 +47,7 @@ public class DiscussionService {
         return discussion;
     }
 
+    @Transactional
     public void delete(long id) {
         Discussion discussion = discussionRepository.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException("Discussion not found: " + id));
@@ -51,7 +55,7 @@ public class DiscussionService {
         discussionRepository.delete(discussion);
     }
 
-    @Transactional
+    @Transactional // 업데이트 메서드에 트랜잭션 추가
     public Discussion update(long id, UpdateDiscussionRequest request) {
         Discussion discussion = discussionRepository.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException("not found: " + id));
@@ -63,12 +67,13 @@ public class DiscussionService {
     }
 
     // 게시글을 작성한 유저인지 확인 (Graduate 엔티티의 이메일로 비교)
-    private static void validatePostOwner(Discussion Discussion) {
-        String userName = SecurityContextHolder.getContext().getAuthentication().getName();
-        // Graduate 엔티티에 getEmail() 메서드가 있다고 가정합니다.
-        if (Discussion.getUser() == null ||
-                !Discussion.getUser().getEmail().equals(userName)) {
-            throw new IllegalArgumentException("Not authorized to delete this Discussion");
+    private void validatePostOwner(Discussion discussion) { // 파라미터 이름 수정
+
+        String authenticatedUserEmail = SecurityContextHolder.getContext().getAuthentication().getName();
+
+        if (discussion.getUser() == null ||
+                !discussion.getUser().getEmail().equals(authenticatedUserEmail)) {
+            throw new IllegalArgumentException("Not authorized to delete/update this Discussion");
         }
     }
 

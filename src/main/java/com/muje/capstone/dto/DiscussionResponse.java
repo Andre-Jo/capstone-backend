@@ -31,6 +31,7 @@ public class DiscussionResponse {
                 null,
                 null,
                 null,
+                null,
                 null
         );
 

@@ -1,9 +1,7 @@
 package com.muje.capstone.controller;
 
 import com.muje.capstone.dto.*;
-import com.muje.capstone.service.AuthenticationService;
-import com.muje.capstone.service.LogoutService;
-import com.muje.capstone.service.UserService;
+import com.muje.capstone.service.*;
 import com.muje.capstone.util.CookieUtil;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
@@ -11,7 +9,6 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.BadCredentialsException;
-import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 import java.util.Optional;
 
@@ -92,5 +89,6 @@ public class UserApiController {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
         }
     }
+
 
 }

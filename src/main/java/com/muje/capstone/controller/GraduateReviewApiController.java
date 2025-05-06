@@ -42,7 +42,7 @@ public class GraduateReviewApiController {
         List<GraduateReviewResponse> responses = graduateReviewService.findAll()
                 .stream()
                 .map(review -> {
-                    UserInfoResponse writerInfo = userService.getUserInfoByEmail(review.getGraduate().getEmail());
+                    UserInfoResponse writerInfo = userService.getUserInfoByEmail(review.getUser().getEmail());
                     return new GraduateReviewResponse(review, writerInfo);
                 })
                 .collect(Collectors.toList());
@@ -57,7 +57,7 @@ public class GraduateReviewApiController {
         }
 
         GraduateReview review = graduateReviewService.findById(id);
-        UserInfoResponse userInfo = userService.getUserInfoByEmail(review.getGraduate().getEmail());
+        UserInfoResponse userInfo = userService.getUserInfoByEmail(review.getUser().getEmail());
         return ResponseEntity.ok().body(new GraduateReviewResponse(review, userInfo));
     }
 

@@ -26,6 +26,10 @@ public abstract class Post {
     @Column(name = "id", updatable = false)
     private Long id;
 
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "user_id", nullable = false)
+    protected User user;
+
     @Column(name = "title", nullable = false)
     protected String title;
 
@@ -52,7 +56,8 @@ public abstract class Post {
     @Column(name = "updated_at")
     protected LocalDateTime updatedAt;
 
-    public Post(String title, String content, int viewCount, int likeCount, int commentCount) {
+    public Post(User user, String title, String content, int viewCount, int likeCount, int commentCount) {
+        this.user = user;
         this.title = title;
         this.content = content;
         this.viewCount = viewCount;

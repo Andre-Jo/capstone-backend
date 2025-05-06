@@ -22,6 +22,7 @@ public class SafeUserInfoResponse {
     // 졸업생 추가 필드
     private String currentCompany;    // 현재 회사
     private String currentSalary;     // 현재 연봉
+    private String occupation;        // 직업 분류
     private String skills;            // ex. Java, Python...
     private Boolean isCompanyVerified; // 회사 인증 여부
 

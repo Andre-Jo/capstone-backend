@@ -29,6 +29,7 @@ public class GraduateReviewResponse {
                 null,
                 originalUserInfo.getCurrentCompany(),
                 originalUserInfo.getCurrentSalary(),
+                originalUserInfo.getOccupation(),
                 originalUserInfo.getSkills(),
                 originalUserInfo.getIsCompanyVerified()
         );

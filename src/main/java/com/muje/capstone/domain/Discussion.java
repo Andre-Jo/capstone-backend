@@ -23,12 +23,8 @@ public class Discussion extends Post {
     @Column(name = "discussion_category")
     private DiscussionCategory discussionCategory;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "user_id")
-    private User user;
-
-    public Discussion(String title, String content, int viewCount, int likeCount, int commentCount, DiscussionCategory discussionCategory, User user) {
-        super(title, content, viewCount, likeCount, commentCount);
+    public Discussion(User user, String title, String content, int viewCount, int likeCount, int commentCount, DiscussionCategory discussionCategory) {
+        super(user, title, content, viewCount, likeCount, commentCount);
         this.discussionCategory = discussionCategory;
         this.user = user;
     }

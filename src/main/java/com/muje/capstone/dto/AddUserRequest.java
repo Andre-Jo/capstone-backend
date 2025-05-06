@@ -31,6 +31,7 @@ public class AddUserRequest {
     // 졸업생만 입력하는 필드
     private String currentCompany; // 현재 회사
     private String currentSalary; // 현재 연봉 (숫자로 저장하는 게 나을 수도 있음)
+    private String occupation; // 직업 분류
     private String skills; // ex. Java, Python...
     private Boolean isCompanyVerified = false; // 기본값 false
 }

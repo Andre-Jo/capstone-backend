@@ -26,35 +26,96 @@ public class CommentService {
     private final PostRepository postRepository;
     private final UserRepository userRepository;
 
-    @Transactional(readOnly = true)
-    public List<CommentResponse> getCommentsByPost(Long postId) {
-        List<Comment> comments = commentRepository.findByPostId(postId);
+    @Transactional(readOnly = true) // 읽기 전용 트랜잭션 유지
+    public List<CommentResponse> getCommentsByUser(String userEmail) {
+        List<Comment> comments = commentRepository.findByUserEmail(userEmail);
+        for (Comment comment : comments) {
+            comment.getReplies().size();
+            if (comment.getParentComment() != null) {
+                comment.getParentComment().getId();
+            }
+        }
         return comments.stream()
                 .map(CommentResponse::new)
                 .collect(Collectors.toList());
     }
 
-    public Comment addComment(Long postId, AddCommentRequest addCommentRequest, String userEmail) {
+    // 1) 포스트의 최상위 댓글 + 각 대댓글을 함께 가져오기
+    @Transactional(readOnly = true)
+    public List<CommentResponse> getCommentsByPost(Long postId) {
+        // 최상위 댓글만
+        List<Comment> roots = commentRepository.findByPostIdAndParentCommentIsNull(postId);
+
+        // DTO로 변환하면서 대댓글을 채워줌
+        return roots.stream()
+                .map(root -> {
+                    CommentResponse dto = new CommentResponse(root);
+                    List<Comment> replies = commentRepository.findByParentCommentId(root.getId());
+                    dto.getReplies().addAll(
+                            replies.stream()
+                                    .map(CommentResponse::new)
+                                    .collect(Collectors.toList())
+                    );
+                    return dto;
+                })
+                .collect(Collectors.toList());
+    }
+
+    // 2) 댓글 작성 (parentCommentId가 있으면 대댓글)
+    @Transactional
+    public Comment addComment(Long postId, AddCommentRequest req, String userEmail) {
         User user = userRepository.findByEmail(userEmail)
                 .orElseThrow(() -> new UsernameNotFoundException("User not found"));
         Post post = postRepository.findById(postId)
                 .orElseThrow(() -> new EntityNotFoundException("Post not found"));
+
+        Comment parent = null;
+        if (req.getParentCommentId() != null) {
+            parent = commentRepository.findById(req.getParentCommentId())
+                    .orElseThrow(() -> new EntityNotFoundException("Parent comment not found"));
+            // 대댓글인 경우, 부모 댓글의 대댓글 수(commentCount)를 1 증가
+            parent.incrementCommentCount();
+            commentRepository.save(parent);
+        }
+
+        // 최상위 댓글인 경우, 게시글의 총 댓글 수(commentCount)를 1 증가
+        post.incrementCommentCount();
+        postRepository.save(post); // 게시글의 변경사항 저장
+
+
         Comment comment = Comment.builder()
                 .post(post)
                 .user(user)
-                .content(addCommentRequest.getContent())
+                .content(req.getContent())
+                .parentComment(parent)
                 .build();
-        post.incrementCommentCount();
+
         return commentRepository.save(comment);
     }
 
     @Transactional
-    public void deleteComment(long commentId) {
+    public void deleteComment(Long commentId) {
         Comment comment = commentRepository.findById(commentId)
                 .orElseThrow(() -> new IllegalArgumentException("Comment not found: " + commentId));
-        validateCommentOwner(comment);
+        validateCommentOwner(comment); // 작성자 검증
+
         Post post = comment.getPost();
-        post.decrementCommentCount();
+
+        Comment parent = comment.getParentComment();
+        if (parent != null) {
+            parent.decrementCommentCount();
+            post.decrementCommentCount();
+            commentRepository.save(parent);
+            postRepository.save(post);
+
+        } else {
+            int numberOfRepliesToDelete = comment.getReplies().size();
+            post.decrementCommentCount(); // 최상위 댓글 1개 감소
+            for (int i = 0; i < numberOfRepliesToDelete; i++) {
+                post.decrementCommentCount(); // 대댓글 수 만큼 추가 감소
+            }
+            postRepository.save(post);
+        }
         commentRepository.delete(comment);
     }
 
