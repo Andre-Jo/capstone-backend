@@ -2,12 +2,16 @@ package com.muje.capstone.service;
 
 import com.muje.capstone.domain.Chat.ChatRoom;
 import com.muje.capstone.domain.Chat.Message;
+import com.muje.capstone.domain.Notification.NotificationType;
+import com.muje.capstone.domain.User;
 import com.muje.capstone.dto.Chat.ChatRoomView;
+import com.muje.capstone.dto.NotificationDto;
 import com.muje.capstone.repository.Chat.ChatRoomRepository;
 import com.muje.capstone.repository.Chat.MessageRepository;
 import com.muje.capstone.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.messaging.simp.SimpMessageSendingOperations;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -23,6 +27,7 @@ public class ChatService {
     private final ChatRoomRepository chatRoomRepository;
     private final SimpMessageSendingOperations messagingTemplate;
     private final UserRepository userRepository;
+    private final NotificationService notificationService;
 
     @Transactional
     public ChatRoom findOrCreate1to1ChatRoom(String currentUserEmail, String otherUserEmail) {
@@ -33,20 +38,21 @@ public class ChatService {
 
         String baseId = ChatRoom.generateBaseRoomId(currentUserId, otherUserId);
 
-        return chatRoomRepository.findById(baseId).map(existingRoom -> {
-            // ✅ 현재 유저가 deletedByUsers에 있다면 제거하고 저장
-            if (existingRoom.getDeletedByUsers().remove(currentUserEmail)) {
-                chatRoomRepository.save(existingRoom);
-            }
-            return existingRoom;
-        }).orElseGet(() -> {
-            ChatRoom newRoom = ChatRoom.builder()
-                    .roomId(baseId)
-                    .user1Id(Math.min(currentUserId, otherUserId))
-                    .user2Id(Math.max(currentUserId, otherUserId))
-                    .build();
-            return chatRoomRepository.save(newRoom);
-        });
+        return chatRoomRepository.findById(baseId)
+                .map(existingRoom -> {
+                    if (existingRoom.getDeletedByUsers().remove(currentUserEmail)) {
+                        chatRoomRepository.save(existingRoom);
+                    }
+                    return existingRoom;
+                })
+                .orElseGet(() -> {
+                    ChatRoom newRoom = ChatRoom.builder()
+                            .roomId(baseId)
+                            .user1Id(Math.min(currentUserId, otherUserId))
+                            .user2Id(Math.max(currentUserId, otherUserId))
+                            .build();
+                    return chatRoomRepository.save(newRoom);
+                });
     }
 
     public List<ChatRoomView> getUserChatRooms(Principal principal) {
@@ -72,35 +78,43 @@ public class ChatService {
 
     @Transactional
     public void saveAndBroadcastMessage(String roomId, Principal principal, String content) {
-        String senderEmail = principal.getName();
-        Long senderId = userRepository.findIdByEmail(senderEmail)
-                .orElseThrow(() -> new IllegalArgumentException("보내는 사용자를 찾을 수 없습니다: " + senderEmail));
+        User user = userRepository.findByEmail(principal.getName())
+                .orElseThrow(() -> new UsernameNotFoundException("User not found"));
 
         ChatRoom room = chatRoomRepository.findById(roomId)
                 .orElseThrow(() -> new IllegalArgumentException("채팅방을 찾을 수 없습니다: " + roomId));
 
         Long receiverId;
-        if (senderId.equals(room.getUser1Id())) {
+        if (user.getId().equals(room.getUser1Id())) {
             receiverId = room.getUser2Id();
-        } else if (senderId.equals(room.getUser2Id())) {
+        } else if (user.getId().equals(room.getUser2Id())) {
             receiverId = room.getUser1Id();
         } else {
             throw new SecurityException("채팅방 참여자가 아닙니다.");
         }
 
-        // roomId가 variant면 baseRoomId로 변환 (현재는 variant 없으니까 roomId 자체가 baseRoomId)
+        // 메시지 저장: baseRoomId 사용
         String baseRoomId = room.getRoomId();
-
         Message chatMessage = Message.builder()
                 .roomId(baseRoomId)
-                .senderId(senderId)
+                .senderId(user.getId())
                 .receiverId(receiverId)
                 .content(content)
                 .build();
-
         Message savedMessage = messageRepository.save(chatMessage);
 
+        // 채팅 메시지 브로드캐스트
         messagingTemplate.convertAndSend("/topic/chat/room/" + baseRoomId, savedMessage);
+
+        // 알림: receiver 이메일 조회 후 NotificationService 호출
+        String receiverEmail = userRepository.findEmailById(receiverId)
+                .orElseThrow(() -> new IllegalArgumentException("수신자 이메일을 찾을 수 없습니다: " + receiverId));
+        notificationService.createAndSend(
+                receiverEmail,
+                NotificationType.CHAT,
+                user.getNickname() + " – " + savedMessage.getContent(),
+                "/chat/rooms/" + baseRoomId
+        );
     }
 
     public List<Message> getMessagesByRoom(String roomId, Principal principal) {

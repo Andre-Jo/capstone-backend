@@ -1,6 +1,7 @@
 package com.muje.capstone.service;
 
 import com.muje.capstone.domain.Comment;
+import com.muje.capstone.domain.Notification;
 import com.muje.capstone.domain.Post;
 import com.muje.capstone.domain.User;
 import com.muje.capstone.dto.AddCommentRequest;
@@ -25,6 +26,7 @@ public class CommentService {
     private final CommentRepository commentRepository;
     private final PostRepository postRepository;
     private final UserRepository userRepository;
+    private final NotificationService notificationService;
 
     @Transactional(readOnly = true) // 읽기 전용 트랜잭션 유지
     public List<CommentResponse> getCommentsByUser(String userEmail) {
@@ -73,15 +75,12 @@ public class CommentService {
         if (req.getParentCommentId() != null) {
             parent = commentRepository.findById(req.getParentCommentId())
                     .orElseThrow(() -> new EntityNotFoundException("Parent comment not found"));
-            // 대댓글인 경우, 부모 댓글의 대댓글 수(commentCount)를 1 증가
             parent.incrementCommentCount();
             commentRepository.save(parent);
         }
 
-        // 최상위 댓글인 경우, 게시글의 총 댓글 수(commentCount)를 1 증가
         post.incrementCommentCount();
-        postRepository.save(post); // 게시글의 변경사항 저장
-
+        postRepository.save(post);
 
         Comment comment = Comment.builder()
                 .post(post)
@@ -89,8 +88,19 @@ public class CommentService {
                 .content(req.getContent())
                 .parentComment(parent)
                 .build();
+        Comment saved = commentRepository.save(comment);
 
-        return commentRepository.save(comment);
+        // 알림: 게시글 작성자에게 댓글 알림 발송
+        String postOwnerEmail = userRepository.findEmailById(post.getUser().getId())
+                .orElseThrow(() -> new IllegalArgumentException("Post owner not found"));
+        notificationService.createAndSend(
+                postOwnerEmail,
+                Notification.NotificationType.COMMENT,
+                user.getNickname() + "님이 댓글을 달았습니다: " + req.getContent(),
+                "/posts/" + postId
+        );
+
+        return saved;
     }
 
     @Transactional

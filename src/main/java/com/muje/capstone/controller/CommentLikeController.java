@@ -21,11 +21,10 @@ public class CommentLikeController {
 
     @PostMapping
     public ResponseEntity<Map<String, Boolean>> toggleLike(
-            @PathVariable Long postId,
             @PathVariable Long commentId,
             Principal principal
     ) {
-        boolean liked = commentLikeService.toggleLike(postId, commentId, principal.getName());
+        boolean liked = commentLikeService.toggleLike(commentId, principal.getName());
         return ResponseEntity.ok(Map.of("liked", liked));
     }
 
