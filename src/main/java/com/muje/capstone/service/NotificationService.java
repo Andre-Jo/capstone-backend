@@ -2,9 +2,9 @@ package com.muje.capstone.service;
 
 import com.muje.capstone.domain.Notification;
 import com.muje.capstone.domain.Notification.NotificationType;
-import com.muje.capstone.dto.NotificationDto;
+import com.muje.capstone.dto.User.NotificationDto;
 import com.muje.capstone.repository.NotificationRepository;
-import com.muje.capstone.repository.UserRepository;
+import com.muje.capstone.repository.User.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.messaging.simp.SimpMessageSendingOperations;
 import org.springframework.security.access.AccessDeniedException;

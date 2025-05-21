@@ -1,8 +1,8 @@
 package com.muje.capstone.util;
 
-import com.muje.capstone.domain.Student;
-import com.muje.capstone.domain.User;
-import com.muje.capstone.repository.UserRepository;
+import com.muje.capstone.domain.User.Student;
+import com.muje.capstone.domain.User.User;
+import com.muje.capstone.repository.User.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;

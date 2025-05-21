@@ -1,6 +1,6 @@
 package com.muje.capstone.controller;
 
-import com.muje.capstone.dto.NotificationDto;
+import com.muje.capstone.dto.User.NotificationDto;
 import com.muje.capstone.service.NotificationService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;

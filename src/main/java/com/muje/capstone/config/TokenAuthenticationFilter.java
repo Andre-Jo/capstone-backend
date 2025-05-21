@@ -1,7 +1,7 @@
 package com.muje.capstone.config;
 
 import com.muje.capstone.config.jwt.TokenProvider;
-import com.muje.capstone.service.TokenService;
+import com.muje.capstone.service.Auth.TokenService;
 import com.muje.capstone.util.CookieUtil;
 import com.muje.capstone.util.SubscriptionUtil;
 import jakarta.servlet.http.Cookie;

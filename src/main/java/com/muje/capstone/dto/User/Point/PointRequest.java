@@ -1,0 +1,11 @@
+package com.muje.capstone.dto.User.Point;
+
+import lombok.Getter;
+import lombok.Setter;
+
+@Getter
+@Setter
+public class PointRequest {
+    private int amount;              // 적립(+)/사용(-)된 포인트
+    private String description;     // 내역 설명
+}

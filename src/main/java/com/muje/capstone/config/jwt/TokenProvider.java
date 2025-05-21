@@ -1,7 +1,7 @@
 package com.muje.capstone.config.jwt;
 
 
-import com.muje.capstone.domain.User;
+import com.muje.capstone.domain.User.User;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Header;
 import io.jsonwebtoken.Jwts;

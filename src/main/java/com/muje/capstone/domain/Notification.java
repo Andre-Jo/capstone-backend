@@ -48,6 +48,7 @@ public class Notification {
         CHAT,
         COMMENT,
         LIKE,
+        COMMENT_ADOPTED,
         SCRAP_EXPIRED
     }
 }

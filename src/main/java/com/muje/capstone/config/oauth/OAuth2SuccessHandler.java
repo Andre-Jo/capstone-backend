@@ -2,10 +2,10 @@ package com.muje.capstone.config.oauth;
 
 import com.muje.capstone.config.jwt.TokenProvider;
 import com.muje.capstone.domain.RefreshToken;
-import com.muje.capstone.domain.User;
-import com.muje.capstone.dto.OAuth2UserResponse;
+import com.muje.capstone.domain.User.User;
+import com.muje.capstone.dto.User.Auth.OAuth2UserResponse;
 import com.muje.capstone.repository.RefreshTokenRepository;
-import com.muje.capstone.service.UserDetailService;
+import com.muje.capstone.service.User.UserDetailService;
 import com.muje.capstone.util.CookieUtil;
 import com.muje.capstone.util.SubscriptionUtil;
 import jakarta.servlet.http.HttpServletRequest;
