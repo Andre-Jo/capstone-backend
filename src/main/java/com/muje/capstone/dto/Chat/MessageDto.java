@@ -18,4 +18,6 @@ public class MessageDto {
     private Long receiverId;
     private String content;
     private LocalDateTime createdAt;
+    private String senderNickname;
+    private String senderProfileImage;
 }

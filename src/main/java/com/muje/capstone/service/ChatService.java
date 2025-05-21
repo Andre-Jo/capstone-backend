@@ -4,8 +4,9 @@ import com.muje.capstone.domain.Chat.ChatRoom;
 import com.muje.capstone.domain.Chat.Message;
 import com.muje.capstone.domain.Notification.NotificationType;
 import com.muje.capstone.domain.User;
+import com.muje.capstone.dto.Chat.ChatRoomDto;
 import com.muje.capstone.dto.Chat.ChatRoomView;
-import com.muje.capstone.dto.NotificationDto;
+import com.muje.capstone.dto.Chat.MessageDto;
 import com.muje.capstone.repository.Chat.ChatRoomRepository;
 import com.muje.capstone.repository.Chat.MessageRepository;
 import com.muje.capstone.repository.UserRepository;
@@ -30,7 +31,7 @@ public class ChatService {
     private final NotificationService notificationService;
 
     @Transactional
-    public ChatRoom findOrCreate1to1ChatRoom(String currentUserEmail, String otherUserEmail) {
+    public ChatRoomDto findOrCreate1to1ChatRoom(String currentUserEmail, String otherUserEmail) {
         Long currentUserId = userRepository.findIdByEmail(currentUserEmail)
                 .orElseThrow(() -> new IllegalArgumentException("사용자를 찾을 수 없습니다: " + currentUserEmail));
         Long otherUserId = userRepository.findIdByEmail(otherUserEmail)
@@ -38,7 +39,7 @@ public class ChatService {
 
         String baseId = ChatRoom.generateBaseRoomId(currentUserId, otherUserId);
 
-        return chatRoomRepository.findById(baseId)
+        ChatRoom room = chatRoomRepository.findById(baseId)
                 .map(existingRoom -> {
                     if (existingRoom.getDeletedByUsers().remove(currentUserEmail)) {
                         chatRoomRepository.save(existingRoom);
@@ -53,6 +54,21 @@ public class ChatService {
                             .build();
                     return chatRoomRepository.save(newRoom);
                 });
+
+        // 상대 사용자 정보 조회
+        Long otherId = room.getUser1Id().equals(currentUserId) ? room.getUser2Id() : room.getUser1Id();
+        User other = userRepository.findById(otherId)
+                .orElseThrow(() -> new IllegalArgumentException("상대 사용자를 찾을 수 없습니다: " + otherId));
+
+        // DTO 반환
+        return ChatRoomDto.builder()
+                .roomId(room.getRoomId())
+                .user1Id(room.getUser1Id())
+                .user2Id(room.getUser2Id())
+                .createdAt(room.getCreatedAt())
+                .otherUserNickname(other.getNickname())
+                .otherUserProfileImage(other.getProfileImage())
+                .build();
     }
 
     public List<ChatRoomView> getUserChatRooms(Principal principal) {
@@ -63,14 +79,28 @@ public class ChatService {
         return chatRoomRepository.findByUser1IdOrUser2Id(userId, userId).stream()
                 .filter(room -> !room.getDeletedByUsers().contains(email))
                 .map(room -> {
-                    Optional<Message> lastMessage = messageRepository.findTopByRoomIdOrderByCreatedAtDesc(room.getRoomId());
+                    // 1) 내 ID와 반대되는 상대방 ID 계산
+                    Long otherUserId = room.getUser1Id().equals(userId)
+                            ? room.getUser2Id()
+                            : room.getUser1Id();
+
+                    // 2) 상대방 User 엔티티 조회
+                    User other = userRepository.findById(otherUserId)
+                            .orElseThrow(() -> new IllegalArgumentException("상대 사용자를 찾을 수 없습니다: " + otherUserId));
+
+                    // 3) 마지막 메시지 조회
+                    Optional<Message> lastMsg = messageRepository.findTopByRoomIdOrderByCreatedAtDesc(room.getRoomId());
+
+                    // 4) ChatRoomView 생성
                     return new ChatRoomView(
                             room.getRoomId(),
                             room.getUser1Id(),
                             room.getUser2Id(),
                             room.getCreatedAt(),
-                            lastMessage.map(Message::getContent).orElse(null),
-                            lastMessage.map(Message::getCreatedAt).orElse(null)
+                            lastMsg.map(Message::getContent).orElse(null),
+                            lastMsg.map(Message::getCreatedAt).orElse(null),
+                            other.getNickname(),
+                            other.getProfileImage()
                     );
                 })
                 .collect(Collectors.toList());
@@ -78,46 +108,55 @@ public class ChatService {
 
     @Transactional
     public void saveAndBroadcastMessage(String roomId, Principal principal, String content) {
-        User user = userRepository.findByEmail(principal.getName())
+        User senderUser = userRepository.findByEmail(principal.getName())
                 .orElseThrow(() -> new UsernameNotFoundException("User not found"));
 
         ChatRoom room = chatRoomRepository.findById(roomId)
                 .orElseThrow(() -> new IllegalArgumentException("채팅방을 찾을 수 없습니다: " + roomId));
 
         Long receiverId;
-        if (user.getId().equals(room.getUser1Id())) {
+        if (senderUser.getId().equals(room.getUser1Id())) {
             receiverId = room.getUser2Id();
-        } else if (user.getId().equals(room.getUser2Id())) {
+        } else if (senderUser.getId().equals(room.getUser2Id())) {
             receiverId = room.getUser1Id();
         } else {
             throw new SecurityException("채팅방 참여자가 아닙니다.");
         }
 
-        // 메시지 저장: baseRoomId 사용
-        String baseRoomId = room.getRoomId();
+        String broadcastTargetRoomId = roomId;
+
         Message chatMessage = Message.builder()
-                .roomId(baseRoomId)
-                .senderId(user.getId())
+                .roomId(roomId)
+                .senderId(senderUser.getId())
                 .receiverId(receiverId)
                 .content(content)
                 .build();
         Message savedMessage = messageRepository.save(chatMessage);
 
-        // 채팅 메시지 브로드캐스트
-        messagingTemplate.convertAndSend("/topic/chat/room/" + baseRoomId, savedMessage);
+        MessageDto messageDto = MessageDto.builder()
+                .id(savedMessage.getId())
+                .roomId(savedMessage.getRoomId())
+                .senderId(savedMessage.getSenderId())
+                .receiverId(savedMessage.getReceiverId())
+                .content(savedMessage.getContent())
+                .createdAt(savedMessage.getCreatedAt())
+                .senderNickname(senderUser.getNickname())
+                .senderProfileImage(senderUser.getProfileImage())
+                .build();
 
-        // 알림: receiver 이메일 조회 후 NotificationService 호출
+        messagingTemplate.convertAndSend("/topic/chat/room/" + broadcastTargetRoomId, messageDto);
+
         String receiverEmail = userRepository.findEmailById(receiverId)
                 .orElseThrow(() -> new IllegalArgumentException("수신자 이메일을 찾을 수 없습니다: " + receiverId));
         notificationService.createAndSend(
                 receiverEmail,
                 NotificationType.CHAT,
-                user.getNickname() + " – " + savedMessage.getContent(),
-                "/chat/rooms/" + baseRoomId
+                senderUser.getNickname() + " – " + savedMessage.getContent(),
+                "/chat/rooms/" + broadcastTargetRoomId
         );
     }
 
-    public List<Message> getMessagesByRoom(String roomId, Principal principal) {
+    public List<MessageDto> getMessagesByRoom(String roomId, Principal principal) {
         String email = principal.getName();
         Long userId = userRepository.findIdByEmail(email)
                 .orElseThrow(() -> new IllegalArgumentException("사용자를 찾을 수 없습니다: " + email));
@@ -133,7 +172,23 @@ public class ChatService {
             return Collections.emptyList();
         }
 
-        return messageRepository.findByRoomIdOrderByCreatedAtAsc(roomId);
+        List<Message> messages = messageRepository.findByRoomIdOrderByCreatedAtAsc(roomId);
+
+        // DTO로 매핑
+        return messages.stream().map(msg -> {
+            User sender = userRepository.findById(msg.getSenderId())
+                    .orElseThrow(() -> new IllegalArgumentException("보낸 사용자를 찾을 수 없습니다: " + msg.getSenderId()));
+            return MessageDto.builder()
+                    .id(msg.getId())
+                    .roomId(msg.getRoomId())
+                    .senderId(msg.getSenderId())
+                    .receiverId(msg.getReceiverId())
+                    .content(msg.getContent())
+                    .createdAt(msg.getCreatedAt())
+                    .senderNickname(sender.getNickname())
+                    .senderProfileImage(sender.getProfileImage())
+                    .build();
+        }).collect(Collectors.toList());
     }
 
     @Transactional

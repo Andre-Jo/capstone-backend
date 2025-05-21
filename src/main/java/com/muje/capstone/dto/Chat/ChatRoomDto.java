@@ -16,5 +16,6 @@ public class ChatRoomDto {
     private Long user1Id;
     private Long user2Id;
     private LocalDateTime createdAt;
-    private LocalDateTime updatedAt;
+    private String otherUserNickname;
+    private String otherUserProfileImage;
 }

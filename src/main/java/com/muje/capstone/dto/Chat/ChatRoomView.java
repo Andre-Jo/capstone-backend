@@ -14,4 +14,7 @@ public class ChatRoomView {
     private LocalDateTime createdAt;
     private String lastMessageContent; // 마지막 메시지 내용
     private LocalDateTime lastMessageTime; // 마지막 메시지 시간
+
+    private String otherUserNickname;
+    private String otherUserProfileImage;
 }
