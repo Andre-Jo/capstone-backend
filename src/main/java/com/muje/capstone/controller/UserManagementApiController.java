@@ -70,7 +70,6 @@ public class UserManagementApiController {
         return ResponseEntity.ok(responseList);
     }
 
-    // ✅ 게시글 엔티티를 PostListItemResponse DTO로 매핑하는 헬퍼 메서드
     private PostListItemResponse mapPostToResponseDto(Post post) {
         // PostListItemResponse 생성자에서 Post 객체를 받아 변환 로직을 처리하도록 구현했으므로,
         // 단순히 새로운 DTO 객체를 생성하여 반환합니다.

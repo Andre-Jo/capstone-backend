@@ -9,6 +9,7 @@ import java.time.LocalDateTime;
 @Data
 @AllArgsConstructor
 public class UserInfoResponse {
+    private Long id;
     private String email;
     private String nickname;
     private String school;

@@ -91,6 +91,7 @@ public class UserService {
         User user = findByEmail(email);
 
         // 공통 필드
+        Long id = user.getId();
         String userEmail = user.getEmail();
         String nickname = user.getNickname();
         String school = user.getSchool();
@@ -132,7 +133,7 @@ public class UserService {
         }
 
         return new UserInfoResponse(
-                userEmail, nickname, school, department, studentYear, userType, points,
+                id, userEmail, nickname, school, department, studentYear, userType, points,
                 profileImage, createdAt, updatedAt, isSchoolVerified, isSocialLogin, enabled,
                 isSubscribed, subscriptionStartDate, subscriptionEndDate,
                 currentCompany, currentSalary, occupation, skills, isCompanyVerified
