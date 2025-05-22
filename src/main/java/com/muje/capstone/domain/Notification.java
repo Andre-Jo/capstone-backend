@@ -33,11 +33,17 @@ public class Notification {
     @Column(name = "message", nullable = false)
     private String message;
 
-    @Column(name = "link")
-    private String link;
-
     @Column(name = "is_read", nullable = false)
     private boolean read;
+
+    @Column(name = "room_id", length = 50)
+    private String roomId;
+
+    @Column(name = "post_id")
+    private Long postId;
+
+    @Column(name = "comment_id")
+    private Long commentId;
 
     @CreatedDate
     @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")

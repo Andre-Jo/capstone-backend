@@ -148,11 +148,11 @@ public class ChatService {
 
         String receiverEmail = userRepository.findEmailById(receiverId)
                 .orElseThrow(() -> new IllegalArgumentException("수신자 이메일을 찾을 수 없습니다: " + receiverId));
-        notificationService.createAndSend(
+
+        notificationService.createChatNotification(
                 receiverEmail,
-                NotificationType.CHAT,
                 senderUser.getNickname() + " – " + savedMessage.getContent(),
-                "/chat/rooms/" + broadcastTargetRoomId
+                roomId
         );
     }
 

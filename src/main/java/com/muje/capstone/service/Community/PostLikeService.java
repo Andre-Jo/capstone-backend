@@ -49,11 +49,12 @@ public class PostLikeService {
             // 알림: 게시글 작성자에게 좋아요 알림
             String postOwnerEmail = userRepository.findEmailById(post.getUser().getId())
                     .orElseThrow(() -> new RuntimeException("Post owner not found"));
-            notificationService.createAndSend(
+
+            notificationService.createLikeNotification(
                     postOwnerEmail,
-                    Notification.NotificationType.LIKE,
                     user.getNickname() + "님이 회원님의 게시글을 좋아합니다.",
-                    "/posts/" + postId
+                    postId,
+                    null
             );
         }
         postRepository.save(post);

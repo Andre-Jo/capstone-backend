@@ -49,11 +49,12 @@ public class CommentLikeService {
             // 알림: 댓글 작성자에게 좋아요 알림
             String commentOwnerEmail = userRepository.findEmailById(comment.getUser().getId())
                     .orElseThrow(() -> new RuntimeException("Comment owner not found"));
-            notificationService.createAndSend(
+
+            notificationService.createLikeNotification(
                     commentOwnerEmail,
-                    Notification.NotificationType.LIKE,
                     user.getNickname() + "님이 회원님의 댓글을 좋아합니다.",
-                    "/posts/" + comment.getPost().getId() + "#comment-" + commentId
+                    comment.getPost().getId(),
+                    commentId
             );
         }
         commentRepository.save(comment);

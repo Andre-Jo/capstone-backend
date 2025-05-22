@@ -90,25 +90,38 @@ public class CommentService {
         post.incrementCommentCount();
         postRepository.save(post);
 
-        Comment comment = Comment.builder()
-                .post(post)
-                .user(user)
-                .content(req.getContent())
-                .parentComment(parent)
-                .build();
-        Comment saved = commentRepository.save(comment);
-
-        // 알림: 게시글 작성자에게 댓글 알림 발송
-        String postOwnerEmail = userRepository.findEmailById(post.getUser().getId())
-                .orElseThrow(() -> new IllegalArgumentException("Post owner not found"));
-        notificationService.createAndSend(
-                postOwnerEmail,
-                Notification.NotificationType.COMMENT,
-                user.getNickname() + "님이 댓글을 달았습니다: " + req.getContent(),
-                "/posts/" + postId
+        Comment comment = commentRepository.save(
+                Comment.builder()
+                        .post(post)
+                        .user(user)
+                        .content(req.getContent())
+                        .parentComment(parent)
+                        .build()
         );
 
-        return saved;
+        // 대댓글이면 → 원댓글 작성자에게 알림
+        if (parent != null && !parent.getUser().getId().equals(user.getId())) {
+            String parentAuthorEmail = parent.getUser().getEmail();
+            notificationService.createCommentNotification(
+                    parentAuthorEmail,
+                    user.getNickname() + "님이 회원님의 댓글에 답글을 달았습니다: " + req.getContent(),
+                    postId,
+                    comment.getId()
+            );
+        }
+
+        // 대댓글이 아니고, 댓글 작성자가 게시글 작성자와 다르면 → 게시글 작성자에게 알림
+        else if (parent == null && !post.getUser().getId().equals(user.getId())) {
+            String postOwnerEmail = post.getUser().getEmail();
+            notificationService.createCommentNotification(
+                    postOwnerEmail,
+                    user.getNickname() + "님이 회원님의 게시글에 댓글을 달았습니다: " + req.getContent(),
+                    postId,
+                    comment.getId()
+            );
+        }
+
+        return comment;
     }
 
     @Transactional
@@ -176,11 +189,11 @@ public class CommentService {
 
         pointService.accumulatePoints(commentAuthor.getEmail(), pointRequest);
 
-        notificationService.createAndSend(
+        notificationService.AdoptCommentNotification(
                 commentAuthor.getEmail(),
-                Notification.NotificationType.COMMENT_ADOPTED,
                 discussion.getTitle() + " 게시글에서 댓글이 채택되어 " + ADOPTION_POINTS + "포인트를 획득했습니다!",
-                "/community/discussions/" + discussionId
+                discussionId,
+                commentId
         );
 
         return commentToAdopt;

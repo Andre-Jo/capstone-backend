@@ -27,50 +27,131 @@ public class NotificationService {
                 .orElseThrow(() -> new IllegalArgumentException("사용자를 찾을 수 없습니다: " + email));
     }
 
-    public NotificationDto createAndSend(String userEmail, NotificationType type, String message, String link) {
+    /** 채팅 알림 생성 (roomId 전달) */
+    public NotificationDto createChatNotification(String userEmail, String message, String roomId) {
         Long userId = resolveUserId(userEmail);
         Notification notification = Notification.builder()
                 .userId(userId)
-                .type(type)
+                .type(Notification.NotificationType.CHAT)
                 .message(message)
-                .link(link)
                 .read(false)
                 .build();
-
         notification = repo.save(notification);
 
-        NotificationDto dto = toDto(notification);
-
-        // 웹소켓 전송
+        NotificationDto dto = NotificationDto.builder()
+                .id(notification.getId())
+                .type(notification.getType())
+                .message(notification.getMessage())
+                .read(notification.isRead())
+                .createdAt(notification.getCreatedAt())
+                .roomId(roomId)
+                .postId(null)
+                .commentId(null)
+                .build();
         template.convertAndSend("/topic/notifications/" + userId, dto);
         return dto;
     }
 
+    /** 댓글 알림 생성 (postId, commentId 전달) */
+    public NotificationDto createCommentNotification(String userEmail, String message, Long postId, Long commentId) {
+        Long userId = resolveUserId(userEmail);
+        Notification notification = Notification.builder()
+                .userId(userId)
+                .type(Notification.NotificationType.COMMENT)
+                .message(message)
+                .read(false)
+                .build();
+        notification = repo.save(notification);
+
+        NotificationDto dto = NotificationDto.builder()
+                .id(notification.getId())
+                .type(notification.getType())
+                .message(notification.getMessage())
+                .read(notification.isRead())
+                .createdAt(notification.getCreatedAt())
+                .roomId(null)
+                .postId(postId)
+                .commentId(commentId)
+                .build();
+        template.convertAndSend("/topic/notifications/" + userId, dto);
+        return dto;
+    }
+
+    /** 댓글 채택 알림 생성 (postId, commentId 전달) */
+    public NotificationDto AdoptCommentNotification(String userEmail, String message, Long postId, Long commentId) {
+        Long userId = resolveUserId(userEmail);
+        Notification notification = Notification.builder()
+                .userId(userId)
+                .type(NotificationType.COMMENT_ADOPTED)
+                .message(message)
+                .read(false)
+                .build();
+        notification = repo.save(notification);
+
+        NotificationDto dto = NotificationDto.builder()
+                .id(notification.getId())
+                .type(notification.getType())
+                .message(notification.getMessage())
+                .read(notification.isRead())
+                .createdAt(notification.getCreatedAt())
+                .roomId(null)
+                .postId(postId)
+                .commentId(commentId)
+                .build();
+        template.convertAndSend("/topic/notifications/" + userId, dto);
+        return dto;
+    }
+
+    /** 좋아요 알림 생성 (postId, commentId 옵션) */
+    public NotificationDto createLikeNotification(String userEmail, String message, Long postId, Long commentId) {
+        Long userId = resolveUserId(userEmail);
+        Notification notification = Notification.builder()
+                .userId(userId)
+                .type(Notification.NotificationType.LIKE)
+                .message(message)
+                .read(false)
+                .build();
+        notification = repo.save(notification);
+
+        NotificationDto dto = NotificationDto.builder()
+                .id(notification.getId())
+                .type(notification.getType())
+                .message(notification.getMessage())
+                .read(notification.isRead())
+                .createdAt(notification.getCreatedAt())
+                .roomId(null)
+                .postId(postId)
+                .commentId(commentId)
+                .build();
+        template.convertAndSend("/topic/notifications/" + userId, dto);
+        return dto;
+    }
+
+    /** 유저의 모든 알림 조회 */
     public List<NotificationDto> findAll(String userEmail) {
         Long userId = resolveUserId(userEmail);
         return repo.findByUserIdOrderByCreatedAtDesc(userId).stream()
-                .map(this::toDto)
+                .map(n -> NotificationDto.builder()
+                        .id(n.getId())
+                        .type(n.getType())
+                        .message(n.getMessage())
+                        .read(n.isRead())
+                        .createdAt(n.getCreatedAt())
+                        .roomId(n.getRoomId())
+                        .postId(n.getPostId())
+                        .commentId(n.getCommentId())
+                        .build()
+                )
                 .collect(Collectors.toList());
     }
 
+    /** 알림 읽음 처리 */
     @Transactional
     public void markAsRead(Long notificationId, String userEmail) {
         Long userId = resolveUserId(userEmail);
         Notification notification = repo.findById(notificationId)
                 .filter(n -> n.getUserId().equals(userId))
                 .orElseThrow(() -> new AccessDeniedException("본인의 알림이 아닙니다."));
-
         notification.setRead(true);
-    }
-
-    private NotificationDto toDto(Notification n) {
-        return new NotificationDto(
-                n.getId(),
-                n.getType(),
-                n.getMessage(),
-                n.getLink(),
-                n.isRead(),
-                n.getCreatedAt()
-        );
     }
 }
