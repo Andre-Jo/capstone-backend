@@ -34,7 +34,8 @@ public abstract class Post {
     @Column(name = "title", nullable = false)
     protected String title;
 
-    @Column(name = "content", nullable = false)
+    @Lob
+    @Column(name = "content", columnDefinition = "TEXT", nullable = false)
     protected String content;
 
     @Column(name = "view_count", nullable = false)

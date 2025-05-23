@@ -18,6 +18,7 @@ public class NotificationDto {
     private LocalDateTime createdAt;   // 생성 시각
 
     private String roomId;             // CHAT 알림일 때
+    private String senderNickname;     // CHAT 알림일 때
     private Long postId;               // COMMENT/LIKE 알림일 때
     private Long commentId;            // 댓글 좋아요 알림일 때
 }

@@ -152,7 +152,8 @@ public class ChatService {
         notificationService.createChatNotification(
                 receiverEmail,
                 senderUser.getNickname() + " – " + savedMessage.getContent(),
-                roomId
+                roomId,
+                senderUser.getNickname()
         );
     }
 

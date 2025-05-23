@@ -56,6 +56,9 @@ dependencies {
 	implementation 'org.springframework.boot:spring-boot-starter-websocket'
 	// STOMP 프로토콜 지원 (내장 메시지 브로커 사용 시 필수)
 	implementation 'org.springframework.boot:spring-boot-starter-websocket' // 중복 제거
+
+	// 재직 증명 API
+	implementation 'io.codef.api:easycodef-java:1.0.6'
 }
 
 tasks.named('test') {

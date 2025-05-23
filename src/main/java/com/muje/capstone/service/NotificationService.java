@@ -27,14 +27,16 @@ public class NotificationService {
                 .orElseThrow(() -> new IllegalArgumentException("사용자를 찾을 수 없습니다: " + email));
     }
 
-    /** 채팅 알림 생성 (roomId 전달) */
-    public NotificationDto createChatNotification(String userEmail, String message, String roomId) {
+    /** 채팅 알림 생성 (roomId, senderNickname 전달) */
+    public NotificationDto createChatNotification(String userEmail, String message, String roomId, String senderNickname) {
         Long userId = resolveUserId(userEmail);
         Notification notification = Notification.builder()
                 .userId(userId)
                 .type(Notification.NotificationType.CHAT)
                 .message(message)
                 .read(false)
+                .roomId(roomId)
+                .senderNickname(senderNickname)
                 .build();
         notification = repo.save(notification);
 
@@ -45,6 +47,7 @@ public class NotificationService {
                 .read(notification.isRead())
                 .createdAt(notification.getCreatedAt())
                 .roomId(roomId)
+                .senderNickname(senderNickname)
                 .postId(null)
                 .commentId(null)
                 .build();
@@ -60,6 +63,8 @@ public class NotificationService {
                 .type(Notification.NotificationType.COMMENT)
                 .message(message)
                 .read(false)
+                .postId(postId)
+                .commentId(commentId)
                 .build();
         notification = repo.save(notification);
 
@@ -85,6 +90,8 @@ public class NotificationService {
                 .type(NotificationType.COMMENT_ADOPTED)
                 .message(message)
                 .read(false)
+                .postId(postId)
+                .commentId(commentId)
                 .build();
         notification = repo.save(notification);
 
@@ -110,6 +117,8 @@ public class NotificationService {
                 .type(Notification.NotificationType.LIKE)
                 .message(message)
                 .read(false)
+                .postId(postId)
+                .commentId(commentId)
                 .build();
         notification = repo.save(notification);
 
@@ -137,6 +146,7 @@ public class NotificationService {
                         .message(n.getMessage())
                         .read(n.isRead())
                         .createdAt(n.getCreatedAt())
+                        .senderNickname(n.getSenderNickname())
                         .roomId(n.getRoomId())
                         .postId(n.getPostId())
                         .commentId(n.getCommentId())

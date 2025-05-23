@@ -36,6 +36,9 @@ public class Notification {
     @Column(name = "is_read", nullable = false)
     private boolean read;
 
+    @Column(name = "sender_nickname", length = 100)
+    private String senderNickname;
+
     @Column(name = "room_id", length = 50)
     private String roomId;
 

@@ -46,3 +46,13 @@ tosspayments:
   url: https://api.tosspayments.com
   client-key: test_ck_pP2YxJ4K87qe6G1mPqD2VRGZwXLO
   secret-key: test_sk_GjLJoQ1aVZqW0JyQ2z5d3w6KYe2R
+
+codef:
+  api:
+    base-url: https://development.codef.io # API Host
+    token-url: https://oauth.codef.io/oauth/token
+  client:
+    id: 273973f4-059b-4773-bcb3-d772dc9dde2c
+    secret: 9aa2a0de-eba7-4d25-8666-58c41b81c784
+  public:
+    key: MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAo2QCWeCKhx1mmCGMryzqjcg4OD6NmSISNJ81BHv2hi+cDDiUBA5JgYAJIMCkTu99fjwMVBK/NUCe4EJv26daJ/k/ccJgeQQ4eFVWueRfq7us5eEAKVmC1dBSCJX80DTLjFYCAX+BPdLzjHYaIqJQ2XC8chttS4Vlg1UIglUWtYyILr9Om/kMsBC4dL5f2NWQbiI0WG4M7O/VKUZYUfBvtMn+gulBzqej2sOB1cBN4UOv2v5sf9Px1T3G9JHkeX0INXSkr+fKePagxQUQuZ4pNexeLbZXvVgds80eyvMf1f2u3t6Pwp6HVRh9M4dJyHaTLTtwpu+VE2ZVKRbPt0hvPwIDAQAB

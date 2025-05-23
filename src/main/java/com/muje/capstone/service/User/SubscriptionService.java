@@ -1,6 +1,6 @@
 package com.muje.capstone.service.User;
 
-import com.muje.capstone.config.TossPaymentsClient;
+import com.muje.capstone.config.client.TossPaymentsClient;
 import com.muje.capstone.domain.User.Student;
 import com.muje.capstone.domain.User.SubscriptionHistory;
 import com.muje.capstone.dto.Payment.BillingKeyRequest;
