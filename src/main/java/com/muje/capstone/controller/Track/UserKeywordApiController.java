@@ -6,8 +6,6 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.List;
-
 @RestController
 @RequestMapping("/api/track/keyword")
 @RequiredArgsConstructor
@@ -19,13 +17,5 @@ public class UserKeywordApiController {
     public ResponseEntity<?> saveKeyword(@RequestBody UserKeywordRequest request) {
         keywordService.saveUserKeyword(request);
         return ResponseEntity.ok().body("{\"status\":\"keyword saved\"}");
-    }
-
-    @GetMapping("/latest-combo")
-    public ResponseEntity<List<String>> getLatestCombo(
-            @RequestParam(required = false) String userId,
-            @RequestParam(required = false) String sessionId) {
-        List<String> keywords = keywordService.getLatestKeywordCombo(userId, sessionId);
-        return ResponseEntity.ok(keywords);
     }
 }

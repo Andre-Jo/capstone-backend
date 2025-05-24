@@ -6,12 +6,9 @@ import com.muje.capstone.dto.Track.UserKeywordRequest;
 import com.muje.capstone.repository.Track.UserKeywordRepository;
 import com.muje.capstone.repository.User.UserRepository;
 import lombok.RequiredArgsConstructor;
-
-import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
-import java.util.ArrayList;
 import java.util.List;
 
 @Service
@@ -46,21 +43,6 @@ public class UserKeywordService {
                 .build();
 
         keywordRepository.save(keyword);
-    }
-
-    public List<String> getLatestKeywordCombo(String userId, String sessionId) {
-        List<String> result = new ArrayList<>();
-        List<String> targetTypes = List.of("location", "job", "tech");
-
-        for (String type : targetTypes) {
-            List<UserKeyword> latest = keywordRepository.findLatestByType(
-                    userId, sessionId, type, PageRequest.of(0, 1));
-            if (!latest.isEmpty()) {
-                result.add(latest.get(0).getKeyword());
-            }
-        }
-
-        return result;
     }
 
 }

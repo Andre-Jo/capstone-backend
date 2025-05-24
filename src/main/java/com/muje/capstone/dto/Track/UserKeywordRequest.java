@@ -1,6 +1,7 @@
 package com.muje.capstone.dto.Track;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+
 import lombok.*;
 
 @Getter
@@ -13,8 +14,8 @@ public class UserKeywordRequest {
     private String userId;
 
     @JsonProperty("session_id")
-    private String sessionId; // 수정: Long → String (DB와 일치)
-
-    private String keywordType;
-    private String keyword;
+    private Long sessionId;
+    
+    private String keywordType; // 필드명 (company, tech, etc)
+    private String keyword;     // 저장할 키워드
 }
