@@ -22,24 +22,31 @@ public class GraduateReviewService {
 
     @Transactional // 저장 메서드에 트랜잭션 추가
     public Long save(AddGraduateReviewRequest request, String email) {
-        Graduate graduateUser = userService.getGraduateByEmail(email); // Graduate 타입 User 객체 가져오기
+    Graduate graduateUser = userService.getGraduateByEmail(email);
 
-        GraduateReview review = GraduateReview.builder()
-                .isAnonymous(request.getIsAnonymous())
-                .title(request.getTitle())
-                .content(request.getContent())
-                .user(graduateUser)
-                .build();
+    GraduateReview review = GraduateReview.builder()
+            .user(graduateUser)
+            .isAnonymous(request.getIsAnonymous())
+            .title(request.getTitle())
+            .content(request.getContent())
+            .q1(request.getQ1())
+            .q2(request.getQ2())
+            .q3(request.getQ3())
+            .q4(request.getQ4())
+            .q5(request.getQ5())
+            .averageScore(request.getAverageScore())
+            .colorIcon(request.getColorIcon())
+            .build();
 
-        return graduateReviewRepository.save(review).getId();
-    }
+    return graduateReviewRepository.save(review).getId();
+}
 
     @Transactional(readOnly = true)
     public List<GraduateReview> findAll() {
         return graduateReviewRepository.findAll();
     }
 
-    @Transactional
+    @Transactional(readOnly = true)
     public GraduateReview findById(Long id) {
         GraduateReview graduateReview = graduateReviewRepository.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException("GraduateReview not found with id: " + id));
@@ -61,10 +68,23 @@ public class GraduateReviewService {
                 .orElseThrow(() -> new IllegalArgumentException("not found: " + id));
 
         validateReviewOwner(graduateReview);
-        graduateReview.updateReview(request.getTitle(), request.getContent(), request.getIsAnonymous());
+
+        graduateReview.updateReview(
+            request.getTitle(),
+            request.getContent(),
+            request.getIsAnonymous(),
+            request.getQ1(),
+            request.getQ2(),
+            request.getQ3(),
+            request.getQ4(),
+            request.getQ5(),
+            request.getAverageScore(),
+            request.getColorIcon()
+        );
 
         return graduateReview;
     }
+
 
     private void validateReviewOwner(GraduateReview graduateReview) {
         String authenticatedUserEmail = SecurityContextHolder.getContext().getAuthentication().getName();

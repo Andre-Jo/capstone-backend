@@ -6,7 +6,6 @@ import com.muje.capstone.dto.Community.GraduateReview.GraduateReviewResponse;
 import com.muje.capstone.dto.Community.GraduateReview.UpdateGraduateReviewRequest;
 import com.muje.capstone.dto.User.UserInfo.UserInfoResponse;
 import com.muje.capstone.service.Community.GraduateReviewService;
-import com.muje.capstone.service.Community.ScrapService;
 import com.muje.capstone.service.User.UserService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -15,7 +14,6 @@ import org.springframework.web.bind.annotation.*;
 
 import java.security.Principal;
 import java.util.List;
-import java.util.Set;
 import java.util.stream.Collectors;
 
 @RequiredArgsConstructor
@@ -25,7 +23,15 @@ public class GraduateReviewApiController {
 
     private final GraduateReviewService graduateReviewService;
     private final UserService userService;
-    private final ScrapService scrapService;
+
+    private int q1;
+    private int q2;
+    private int q3;
+    private int q4;
+    private int q5;
+    private double averageScore;
+    private String colorIcon;
+
 
     @PostMapping("/")
     public ResponseEntity<?> addGraduateReview(@RequestBody AddGraduateReviewRequest request, Principal principal) {
@@ -38,36 +44,30 @@ public class GraduateReviewApiController {
 
     @GetMapping("/")
     public ResponseEntity<?> findAllGraduateReview(Principal principal) {
-        /*if (!userService.canViewGraduateReviews(principal.getName())) {
+        if (!userService.canViewGraduateReviews(principal.getName())) {
             return ResponseEntity.status(HttpStatus.FORBIDDEN).body("접근 권한이 없습니다.");
-        }*/
-        String email = principal.getName();
-        Set<Long> myScraps = scrapService.findScrappedPostIds(email);
+        }
 
         List<GraduateReviewResponse> responses = graduateReviewService.findAll()
                 .stream()
                 .map(review -> {
                     UserInfoResponse writerInfo = userService.getUserInfoByEmail(review.getUser().getEmail());
-                    GraduateReviewResponse dto = new GraduateReviewResponse(review, writerInfo);
-                    dto.setScrapped(myScraps.contains(review.getId()));
-                    return dto;
+                    return new GraduateReviewResponse(review, writerInfo);
                 })
                 .collect(Collectors.toList());
+
         return ResponseEntity.ok().body(responses);
     }
 
     @GetMapping("/{id}")
     public ResponseEntity<?> findGraduateReview(@PathVariable long id, Principal principal) {
-        /*if (!userService.canViewGraduateReviews(principal.getName())) {
+        if (!userService.canViewGraduateReviews(principal.getName())) {
             return ResponseEntity.status(HttpStatus.FORBIDDEN).body("접근 권한이 없습니다.");
-        }*/
+        }
 
         GraduateReview review = graduateReviewService.findById(id);
         UserInfoResponse userInfo = userService.getUserInfoByEmail(review.getUser().getEmail());
-
-        GraduateReviewResponse dto = new GraduateReviewResponse(review, userInfo);
-        dto.setScrapped(scrapService.isPostScrappedByUser(id));
-        return ResponseEntity.ok(dto);
+        return ResponseEntity.ok().body(new GraduateReviewResponse(review, userInfo));
     }
 
 

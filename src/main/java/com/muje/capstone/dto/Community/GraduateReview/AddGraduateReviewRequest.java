@@ -11,4 +11,12 @@ public class AddGraduateReviewRequest {
     private Boolean isAnonymous;
     private String title;
     private String content;
+
+    private int q1;
+    private int q2;
+    private int q3;
+    private int q4;
+    private int q5;
+    private double averageScore;
+    private String colorIcon;
 }

@@ -4,10 +4,8 @@ import com.muje.capstone.domain.Community.GraduateReview;
 import com.muje.capstone.dto.User.UserInfo.SafeUserInfoResponse;
 import com.muje.capstone.dto.User.UserInfo.UserInfoResponse;
 import lombok.Getter;
-import lombok.Setter;
 
 @Getter
-@Setter
 public class GraduateReviewResponse {
 
     private final Long id;
@@ -17,8 +15,16 @@ public class GraduateReviewResponse {
     private final int likeCount;
     private final String createdAt;
     private final String updatedAt;
+    
+    private final int q1;
+    private final int q2;
+    private final int q3;
+    private final int q4;
+    private final int q5;
+    private final double averageScore;
+    private final String colorIcon;
+    
     private final SafeUserInfoResponse userInfo;  // 안전한 유저 정보 DTO
-    private boolean scrapped;
 
     public GraduateReviewResponse(GraduateReview review, UserInfoResponse originalUserInfo) {
         // 원본 UserInfoResponse에서 필요한 정보만 SafeUserInfoResponse로 옮깁니다.
@@ -53,6 +59,14 @@ public class GraduateReviewResponse {
         this.likeCount = review.getLikeCount();
         this.createdAt = review.getCreatedAt().toString();
         this.updatedAt = review.getUpdatedAt().toString();
+
+        this.q1 = review.getQ1();
+        this.q2 = review.getQ2();
+        this.q3 = review.getQ3();
+        this.q4 = review.getQ4();
+        this.q5 = review.getQ5();
+        this.averageScore = review.getAverageScore();
+        this.colorIcon = review.getColorIcon();
     }
 
     private String maskEmail(String email) {
