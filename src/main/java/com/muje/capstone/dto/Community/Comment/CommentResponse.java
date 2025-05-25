@@ -6,13 +6,14 @@ import com.muje.capstone.domain.User.Graduate;
 import com.muje.capstone.domain.User.Student;
 import com.muje.capstone.domain.User.User;
 import com.muje.capstone.dto.User.UserInfo.UserInfoResponse;
-import lombok.Data;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
+import com.muje.capstone.repository.Community.CommentRepository;
+import lombok.*;
+import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Data
 @NoArgsConstructor
@@ -22,24 +23,22 @@ public class CommentResponse {
     private CommentUserDto user;
     private String content;
     private LocalDateTime createdAt;
-    private List<CommentResponse> replies;
+    private List<CommentResponse> replies = new ArrayList<>();
     private Boolean isAdopted;
 
-    // 최상위 댓글용 생성자
     public CommentResponse(Comment comment) {
         this.id        = comment.getId();
         this.post      = new PostDto(comment.getPost());
         this.user      = new CommentUserDto(comment.getUser());
         this.content   = comment.getContent();
         this.createdAt = comment.getCreatedAt();
-        this.replies   = new ArrayList<>();  // 서비스 계층에서 채워줄 것
         this.isAdopted = comment.getIsAdopted();
     }
 
     public CommentResponse(Comment comment, UserInfoResponse userInfo) {
         this.id = comment.getId();
         this.post = new PostDto(comment.getPost());
-        this.user = new CommentUserDto(comment.getUser());
+        this.user = new CommentUserDto(userInfo);
         this.content = comment.getContent();
         this.createdAt = comment.getCreatedAt();
         this.replies = new ArrayList<>(); // 채택 시에는 대댓글이 중요하지 않을 수 있지만, 구조상 유지
@@ -50,7 +49,6 @@ public class CommentResponse {
     public static class PostDto {
         private Long id;
         private String title;
-        // 필요 시 더 추가
 
         public PostDto(Post post) {
             this.id    = post.getId();
@@ -62,26 +60,31 @@ public class CommentResponse {
     public static class CommentUserDto {
         private String profileImage;
         private String nickname;
-
-        // Student 전용
         private String school;
         private String department;
-
-        // Graduate 전용
         private String company;
         private String occupation;
 
         public CommentUserDto(User user) {
             this.profileImage = user.getProfileImage();
-            this.nickname     = user.getNickname();
+            this.nickname = user.getNickname();
+            this.school = user.getSchool();
+            this.department = user.getDepartment();
 
-            if (user instanceof Student student) {
-                this.school     = student.getSchool();
-                this.department = student.getDepartment();
-            } else if (user instanceof Graduate graduate) {
+            if (user instanceof Graduate graduate) {
                 this.company    = graduate.getCurrentCompany();
                 this.occupation = graduate.getOccupation();
             }
+        }
+
+        // UserInfoResponse 기반
+        public CommentUserDto(UserInfoResponse info) {
+            this.profileImage = info.getProfileImage();
+            this.nickname     = info.getNickname();
+            this.school       = info.getSchool();
+            this.department   = info.getDepartment();
+            this.company      = info.getCurrentCompany();
+            this.occupation   = info.getOccupation();
         }
     }
 }

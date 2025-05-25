@@ -1,9 +1,9 @@
 package com.muje.capstone.service.Community;
 
-import com.muje.capstone.domain.*;
 import com.muje.capstone.domain.Community.Comment;
 import com.muje.capstone.domain.Community.Discussion;
 import com.muje.capstone.domain.Community.Post;
+import com.muje.capstone.domain.User.Graduate;
 import com.muje.capstone.domain.User.User;
 import com.muje.capstone.dto.Community.Comment.AddCommentRequest;
 import com.muje.capstone.dto.Community.Comment.CommentResponse;
@@ -53,19 +53,14 @@ public class CommentService {
     // 1) 포스트의 최상위 댓글 + 각 대댓글을 함께 가져오기
     @Transactional(readOnly = true)
     public List<CommentResponse> getCommentsByPost(Long postId) {
-        // 최상위 댓글만
         List<Comment> roots = commentRepository.findByPostIdAndParentCommentIsNull(postId);
 
-        // DTO로 변환하면서 대댓글을 채워줌
+        // DTO 변환 + 대댓글 매핑
         return roots.stream()
                 .map(root -> {
                     CommentResponse dto = new CommentResponse(root);
                     List<Comment> replies = commentRepository.findByParentCommentId(root.getId());
-                    dto.getReplies().addAll(
-                            replies.stream()
-                                    .map(CommentResponse::new)
-                                    .collect(Collectors.toList())
-                    );
+                    replies.forEach(reply -> dto.getReplies().add(new CommentResponse(reply)));
                     return dto;
                 })
                 .collect(Collectors.toList());
