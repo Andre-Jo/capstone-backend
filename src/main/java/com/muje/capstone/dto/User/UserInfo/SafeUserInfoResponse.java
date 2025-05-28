@@ -2,10 +2,14 @@ package com.muje.capstone.dto.User.UserInfo;
 
 import com.muje.capstone.domain.User.User;
 import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 
 @Data
 @AllArgsConstructor
+@NoArgsConstructor
+@Builder
 public class SafeUserInfoResponse {
     private String email;
     private String nickname;

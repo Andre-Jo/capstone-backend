@@ -5,11 +5,17 @@ import com.muje.capstone.domain.User.Graduate;
 import com.muje.capstone.domain.User.Student;
 import com.muje.capstone.dto.User.SingUp_In.AddUserRequest;
 import com.muje.capstone.dto.User.UserInfo.UserInfoResponse;
+import com.muje.capstone.dto.User.UserInfo.UserUpdateRequest;
+import com.muje.capstone.repository.User.GraduateRepository;
+import com.muje.capstone.repository.User.StudentRepository;
 import com.muje.capstone.repository.User.UserRepository;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.core.userdetails.UserDetailsService;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.util.Optional;
@@ -19,6 +25,9 @@ import java.util.Optional;
 public class UserService {
 
     private final UserRepository userRepository;
+    private final StudentRepository studentRepository;
+    private final GraduateRepository graduateRepository;
+    private final BCryptPasswordEncoder passwordEncoder;
 
     public boolean emailExists(String email) {
         return userRepository.findByEmail(email).isPresent();
@@ -34,13 +43,12 @@ public class UserService {
             throw new IllegalArgumentException("이미 존재하는 이메일입니다: " + dto.getEmail());
         }
 
-        BCryptPasswordEncoder encoder = new BCryptPasswordEncoder();
         User user;
 
         if (dto.getUserType() == User.UserType.STUDENT) {
             user = Student.builder()
                     .email(dto.getEmail())
-                    .password(encoder.encode(dto.getPassword()))
+                    .password(passwordEncoder.encode(dto.getPassword()))
                     .nickname(dto.getNickname())
                     .school(dto.getSchool())
                     .department(dto.getDepartment())
@@ -54,7 +62,7 @@ public class UserService {
         } else if (dto.getUserType() == User.UserType.GRADUATE) {
             user = Graduate.builder()
                     .email(dto.getEmail())
-                    .password(encoder.encode(dto.getPassword()))
+                    .password(passwordEncoder.encode(dto.getPassword()))
                     .nickname(dto.getNickname())
                     .school(dto.getSchool())
                     .department(dto.getDepartment())
@@ -90,6 +98,13 @@ public class UserService {
     public UserInfoResponse getUserInfoByEmail(String email) {
         User user = findByEmail(email);
 
+        // 하위 클래스까지 강제 로딩
+        if (user.getUserType() == User.UserType.STUDENT) {
+            user = studentRepository.findByEmail(email); // 업캐스팅
+        } else if (user.getUserType() == User.UserType.GRADUATE) {
+            user = graduateRepository.findByEmail(email); // 업캐스팅
+        }
+
         // 공통 필드
         Long id = user.getId();
         String userEmail = user.getEmail();
@@ -106,25 +121,23 @@ public class UserService {
         Boolean isSocialLogin = user.getIsSocialLogin();
         Boolean enabled = user.getEnabled();
 
-        // 재학생 전용 필드 (STUDENT 타입)
+        // 재학생 전용 필드
         Boolean isSubscribed = null;
         LocalDateTime subscriptionStartDate = null;
         LocalDateTime subscriptionEndDate = null;
 
-        // 졸업생 전용 필드 (GRADUATE 타입)
+        // 졸업생 전용 필드
         String currentCompany = null;
         String currentSalary = null;
         String occupation = null;
         String skills = null;
         Boolean isCompanyVerified = null;
 
-        if (user.getUserType() == User.UserType.STUDENT && user instanceof Student) {
-            Student student = (Student) user;
+        if (user instanceof Student student) {
             isSubscribed = student.isSubscriptionActive();
             subscriptionStartDate = student.getSubscriptionStart();
-            subscriptionEndDate   = student.getSubscriptionEnd();
-        } else if (user.getUserType() == User.UserType.GRADUATE && user instanceof Graduate) {
-            Graduate graduate = (Graduate) user;
+            subscriptionEndDate = student.getSubscriptionEnd();
+        } else if (user instanceof Graduate graduate) {
             currentCompany = graduate.getCurrentCompany();
             currentSalary = graduate.getCurrentSalary();
             occupation = graduate.getOccupation();
@@ -180,5 +193,46 @@ public class UserService {
 
     public boolean canViewGraduateReviews(String email) {
         return isGraduate(email) || isSubscribedStudent(email);
+    }
+
+    @Transactional
+    public UserInfoResponse updateUserInfo(String email, UserUpdateRequest request) {
+        User user = findByEmail(email);
+
+        // 비밀번호 업데이트
+        if (request.getPassword() != null && !request.getPassword().isEmpty()) {
+            user.setPassword(passwordEncoder.encode(request.getPassword()));
+        }
+
+        // 닉네임 업데이트
+        if (request.getNickname() != null && !request.getNickname().isEmpty()) {
+            user.setNickname(request.getNickname());
+        }
+
+        // 졸업생 관련 필드는 UserType이 GRADUATE일 때만 업데이트
+        if (user.getUserType() == User.UserType.GRADUATE) {
+            Graduate graduate = (Graduate) user;
+
+            if (request.getCurrentSalary() != null) {
+                graduate.setCurrentSalary(request.getCurrentSalary());
+            }
+            if (request.getOccupation() != null) {
+                graduate.setOccupation(request.getOccupation());
+            }
+            if (request.getSkills() != null) {
+                graduate.setSkills(request.getSkills());
+            }
+
+        }
+
+        User updatedUser = userRepository.save(user); // 변경된 내용 저장
+        return new UserInfoResponse(updatedUser); // 업데이트된 정보로 응답
+    }
+
+    @Transactional
+    public void updateProfileImage(String email, String fileName) {
+        User user = findByEmail(email);
+        user.setProfileImage(fileName);
+        userRepository.save(user);
     }
 }

@@ -5,6 +5,7 @@ import com.muje.capstone.service.Auth.TokenService;
 import com.muje.capstone.config.oauth.OAuth2SuccessHandler;
 import com.muje.capstone.repository.RefreshTokenRepository;
 import com.muje.capstone.service.User.UserDetailService;
+import com.muje.capstone.service.User.UserService;
 import com.muje.capstone.util.SubscriptionUtil;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
@@ -52,7 +53,9 @@ public class WebOAuthSecurityConfig {
                                 "/oauth2/**",
                                 "/api/univ/**",
                                 "/api/event",
-                                "/api/track/**")
+                                "/api/track/**",
+                                "/api/users/profile-image/**"
+                                )
                         .permitAll()
                         .requestMatchers("/api/**").authenticated()
                         .anyRequest().permitAll()
@@ -85,11 +88,6 @@ public class WebOAuthSecurityConfig {
     @Bean
     public TokenAuthenticationFilter tokenAuthenticationFilter() {
         return new TokenAuthenticationFilter(tokenProvider, tokenService, subscriptionUtil);
-    }
-
-    @Bean
-    public BCryptPasswordEncoder bCryptPasswordEncoder() {
-        return new BCryptPasswordEncoder();
     }
 
     @Bean

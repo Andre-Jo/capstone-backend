@@ -68,6 +68,9 @@ public class TokenAuthenticationFilter extends OncePerRequestFilter {
         if (uri.startsWith("/api/auth/")) {
             return true;
         }
+        if (uri.startsWith("/api/users/profile-image/**")) {
+            return true;
+        }
         if (uri.startsWith("/api/track/")) {
             return true;
         }

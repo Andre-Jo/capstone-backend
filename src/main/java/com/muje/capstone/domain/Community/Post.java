@@ -41,7 +41,7 @@ public abstract class Post {
     protected String content;
 
     @OneToMany(mappedBy = "post",  cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<Comment> comments = new ArrayList<>();
+    protected List<Comment> comments = new ArrayList<>();
 
     @Column(name = "view_count", nullable = false)
     @Builder.Default

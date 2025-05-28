@@ -2,10 +2,7 @@ package com.muje.capstone.domain.User;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
 import jakarta.persistence.*;
-import lombok.AccessLevel;
-import lombok.Builder;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
+import lombok.*;
 import lombok.experimental.SuperBuilder;
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.LastModifiedDate;
@@ -21,6 +18,7 @@ import java.util.List;
 @Table(name = "Users")
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @Getter
+@Setter
 @Entity
 @Inheritance(strategy = InheritanceType.JOINED) // 상속 받은 서브 클래스 id 선언 필요 없음
 @SuperBuilder

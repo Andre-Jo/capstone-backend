@@ -1,6 +1,7 @@
 package com.muje.capstone.dto.Community.GraduateReview;
 
 import com.muje.capstone.domain.Community.GraduateReview;
+import com.muje.capstone.domain.User.User;
 import com.muje.capstone.dto.User.UserInfo.SafeUserInfoResponse;
 import com.muje.capstone.dto.User.UserInfo.UserInfoResponse;
 import lombok.Getter;
@@ -27,23 +28,28 @@ public class GraduateReviewResponse {
     private final SafeUserInfoResponse userInfo;  // 안전한 유저 정보 DTO
 
     public GraduateReviewResponse(GraduateReview review, UserInfoResponse originalUserInfo) {
-        // 원본 UserInfoResponse에서 필요한 정보만 SafeUserInfoResponse로 옮깁니다.
-        SafeUserInfoResponse safeUserInfo = new SafeUserInfoResponse(
-                originalUserInfo.getEmail(),
-                originalUserInfo.getNickname(),
-                originalUserInfo.getSchool(),
-                originalUserInfo.getDepartment(),
-                originalUserInfo.getStudentYear(),
-                originalUserInfo.getUserType(),
-                originalUserInfo.getProfileImage(),
-                originalUserInfo.getIsSchoolVerified(),
-                null,
-                originalUserInfo.getCurrentCompany(),
-                originalUserInfo.getCurrentSalary(),
-                originalUserInfo.getOccupation(),
-                originalUserInfo.getSkills(),
-                originalUserInfo.getIsCompanyVerified()
-        );
+        SafeUserInfoResponse.SafeUserInfoResponseBuilder builder = SafeUserInfoResponse.builder()
+                .email(originalUserInfo.getEmail())
+                .nickname(originalUserInfo.getNickname())
+                .school(originalUserInfo.getSchool())
+                .department(originalUserInfo.getDepartment())
+                .studentYear(originalUserInfo.getStudentYear())
+                .userType(originalUserInfo.getUserType())
+                .profileImage(originalUserInfo.getProfileImage())
+                .isSchoolVerified(originalUserInfo.getIsSchoolVerified());
+
+        if (originalUserInfo.getUserType() == User.UserType.STUDENT) {
+            builder.isSubscribed(originalUserInfo.getIsSubscribed());
+        } else if (originalUserInfo.getUserType() == User.UserType.GRADUATE) {
+            builder
+                    .currentCompany(originalUserInfo.getCurrentCompany())
+                    .currentSalary(originalUserInfo.getCurrentSalary())
+                    .occupation(originalUserInfo.getOccupation())
+                    .skills(originalUserInfo.getSkills())
+                    .isCompanyVerified(originalUserInfo.getIsCompanyVerified());
+        }
+
+        SafeUserInfoResponse safeUserInfo = builder.build();
 
         // 만약 익명 처리가 필요하면 민감 정보 일부를 마스킹합니다.
         if (review.getIsAnonymous() != null && review.getIsAnonymous()) {

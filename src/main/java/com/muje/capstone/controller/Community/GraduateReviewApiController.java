@@ -43,10 +43,7 @@ public class GraduateReviewApiController {
     }
 
     @GetMapping("/")
-    public ResponseEntity<?> findAllGraduateReview(Principal principal) {
-        if (!userService.canViewGraduateReviews(principal.getName())) {
-            return ResponseEntity.status(HttpStatus.FORBIDDEN).body("접근 권한이 없습니다.");
-        }
+    public ResponseEntity<?> findAllGraduateReview() {
 
         List<GraduateReviewResponse> responses = graduateReviewService.findAll()
                 .stream()
@@ -60,10 +57,7 @@ public class GraduateReviewApiController {
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<?> findGraduateReview(@PathVariable long id, Principal principal) {
-        if (!userService.canViewGraduateReviews(principal.getName())) {
-            return ResponseEntity.status(HttpStatus.FORBIDDEN).body("접근 권한이 없습니다.");
-        }
+    public ResponseEntity<?> findGraduateReview(@PathVariable long id) {
 
         GraduateReview review = graduateReviewService.findById(id);
         UserInfoResponse userInfo = userService.getUserInfoByEmail(review.getUser().getEmail());
