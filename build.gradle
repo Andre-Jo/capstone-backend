@@ -58,7 +58,7 @@ dependencies {
 	implementation 'org.springframework.boot:spring-boot-starter-websocket' // 중복 제거
 
 	// 재직 증명 API
-	implementation 'io.codef.api:easycodef-java:1.0.6'
+	implementation 'io.codef.api:easycodef-java:1.0.5'
 }
 
 tasks.named('test') {
