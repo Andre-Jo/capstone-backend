@@ -58,6 +58,7 @@ public class UserService {
                     .isSchoolVerified(dto.getIsSchoolVerified())
                     .isSocialLogin(dto.getIsSocialLogin())
                     .enabled(true)
+                    .subscriptionFee(dto.getSubscriptionFee())
                     .build();
         } else if (dto.getUserType() == User.UserType.GRADUATE) {
             user = Graduate.builder()

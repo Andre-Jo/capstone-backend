@@ -7,6 +7,8 @@ import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 
+import java.math.BigDecimal;
+
 @Getter
 @Setter
 public class AddUserRequest {
@@ -25,6 +27,7 @@ public class AddUserRequest {
     private User.UserType userType; // STUDENT or GRADUATE
     private String profileImage;
     private Integer studentYear; // 입학년도 (Integer로 변경, null 허용)
+    private BigDecimal subscriptionFee = BigDecimal.ZERO;
     private Boolean isSchoolVerified = false;
     private Boolean isSocialLogin = false;
 
