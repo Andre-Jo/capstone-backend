@@ -11,10 +11,10 @@ public class CompanyVerificationRequest {
     private String organization = "0001"; // 기관코드
     private String loginType = "5"; // 로그인 구분 (간편인증)
     private String loginTypeLevel = "1"; // 간편인증 로그인 구분 (카카오)
+    private String identityEncYn = "Y"; // 주민등록번호 뒷자리 암호화 여부 ("Y"/"N"), 필요시 설정. 일반적으로 "Y" 고정.
     private String userName; // 사용자 이름
     private String telecom; // 통신사
     private String phoneNo; // 핸드폰 번호
-    private String identityEncYn = "Y"; // 주민등록번호 뒷자리 암호화 여부 ("Y"/"N"), 필요시 설정. 일반적으로 "Y" 고정.
 
     @NotBlank(message = "생년월일은 필수 입력 항목입니다.")
     @Pattern(regexp = "^\\d{6}$", message = "생년월일은 6자리 숫자(YYMMDD) 형식이어야 합니다.")
