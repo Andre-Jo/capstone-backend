@@ -25,6 +25,7 @@ public class CommentResponse {
     private LocalDateTime createdAt;
     private List<CommentResponse> replies = new ArrayList<>();
     private Boolean isAdopted;
+    private int likeCount;
 
     public CommentResponse(Comment comment) {
         this.id        = comment.getId();
@@ -33,6 +34,7 @@ public class CommentResponse {
         this.content   = comment.getContent();
         this.createdAt = comment.getCreatedAt();
         this.isAdopted = comment.getIsAdopted();
+        this.likeCount = comment.getLikeCount();
     }
 
     public CommentResponse(Comment comment, UserInfoResponse userInfo) {
@@ -43,6 +45,7 @@ public class CommentResponse {
         this.createdAt = comment.getCreatedAt();
         this.replies = new ArrayList<>(); // 채택 시에는 대댓글이 중요하지 않을 수 있지만, 구조상 유지
         this.isAdopted = comment.getIsAdopted();
+        this.likeCount = comment.getLikeCount();
     }
 
     @Getter

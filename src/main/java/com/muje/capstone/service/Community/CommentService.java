@@ -3,7 +3,6 @@ package com.muje.capstone.service.Community;
 import com.muje.capstone.domain.Community.Comment;
 import com.muje.capstone.domain.Community.Discussion;
 import com.muje.capstone.domain.Community.Post;
-import com.muje.capstone.domain.User.Graduate;
 import com.muje.capstone.domain.User.User;
 import com.muje.capstone.dto.Community.Comment.AddCommentRequest;
 import com.muje.capstone.dto.Community.Comment.CommentResponse;
