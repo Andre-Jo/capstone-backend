@@ -17,7 +17,8 @@ public class CookieUtil {
         cookie.setSecure("prod".equals(System.getenv("SPRING_PROFILES_ACTIVE"))); // 프로덕션에서만 true
         cookie.setPath("/");
         cookie.setMaxAge(maxAge);
-        cookie.setAttribute("SameSite", "Lax"); // Lax로 설정
+        cookie.setSecure(true); // HTTPS 전제
+        cookie.setAttribute("SameSite", "None"); // 크로스사이트에서도 쿠키 전송 허용
         response.addCookie(cookie);
     }
 
