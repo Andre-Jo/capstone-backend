@@ -1,0 +1,69 @@
+spring:
+  jpa:
+    # 전송 쿼리 확인
+    show-sql: true
+    properties:
+      hibernate:
+        format_sql: true
+
+    # 테이블 생성 후 data.sql 실행
+    defer-datasource-initialization: true
+
+  servlet:
+    multipart:
+      max-file-size: 10MB
+      max-request-size: 10MB
+
+  #  datasource:
+#    url: jdbc:h2:mem:testdb;DB_CLOSE_DELAY=-1;MODE=MYSQL
+#    username: sa
+#    password:
+#
+#  h2:
+#    console:
+#      enabled: true
+#      path: /h2-console
+#      settings:
+#        web-allow-others: true  # 다른 IP에서도 접속 가능하도록 설정
+
+  security:
+    oauth2:
+      client:
+        registration:
+          google:
+            client-id: 838799738358-jl8sknrvlu1ct7okjpe7ddmt0qufbvke.apps.googleusercontent.com
+            client-secret: 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
+            scope:
+              - email
+              - profile
+
+jwt:
+  issuer: capstone_muje
+  secret_key: capstone_muje
+
+univcert:
+  api-key: b2dbc1c6-3604-41fa-8bc9-5a36cc0f1dfc
+
+tosspayments:
+  url: https://api.tosspayments.com
+  client-key: test_ck_pP2YxJ4K87qe6G1mPqD2VRGZwXLO
+  secret-key: test_sk_GjLJoQ1aVZqW0JyQ2z5d3w6KYe2R
+
+codef:
+  api:
+    base-url: https://development.codef.io # API Host
+    token-url: https://oauth.codef.io/oauth/token
+  client:
+    id: 273973f4-059b-4773-bcb3-d772dc9dde2c
+    secret: 9aa2a0de-eba7-4d25-8666-58c41b81c784
+  public:
+    key: MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAo2QCWeCKhx1mmCGMryzqjcg4OD6NmSISNJ81BHv2hi+cDDiUBA5JgYAJIMCkTu99fjwMVBK/NUCe4EJv26daJ/k/ccJgeQQ4eFVWueRfq7us5eEAKVmC1dBSCJX80DTLjFYCAX+BPdLzjHYaIqJQ2XC8chttS4Vlg1UIglUWtYyILr9Om/kMsBC4dL5f2NWQbiI0WG4M7O/VKUZYUfBvtMn+gulBzqej2sOB1cBN4UOv2v5sf9Px1T3G9JHkeX0INXSkr+fKePagxQUQuZ4pNexeLbZXvVgds80eyvMf1f2u3t6Pwp6HVRh9M4dJyHaTLTtwpu+VE2ZVKRbPt0hvPwIDAQAB
+
+### 배포 시 반드시 변경 해야 할 것들 !!
+
+frontend:
+  base-url: "http://localhost:3000"
+#  base-url: "http://174.129.91.146:3000"
+
+file:
+  upload-dir: /Users/andre/Desktop/Workspace/Capstone/image
