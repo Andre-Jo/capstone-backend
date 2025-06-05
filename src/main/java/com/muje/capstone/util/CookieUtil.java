@@ -14,11 +14,10 @@ public class CookieUtil {
     public static void addCookie(HttpServletResponse response, String name, String value, int maxAge) {
         Cookie cookie = new Cookie(name, value);
         cookie.setHttpOnly(true);
-        boolean isProd = "prod".equals(System.getenv("SPRING_PROFILES_ACTIVE"));
-        cookie.setSecure(isProd); // 프로덕션에서만 Secure
+        cookie.setSecure(true); // 프로덕션에서만 Secure
+        cookie.setAttribute("SameSite", "None");
         cookie.setPath("/");
         cookie.setMaxAge(maxAge);
-        cookie.setAttribute("SameSite", isProd ? "None" : "Lax");
         response.addCookie(cookie);
     }
 
