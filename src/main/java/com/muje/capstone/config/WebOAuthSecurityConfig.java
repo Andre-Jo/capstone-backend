@@ -53,8 +53,7 @@ public class WebOAuthSecurityConfig {
                                 "/oauth2/**",
                                 "/api/univ/**",
                                 "/api/event",
-                                "/api/track/**",
-                                "/api/users/profile-image/**"
+                                "/api/track/**"
                                 )
                         .permitAll()
                         .requestMatchers("/api/**").authenticated()

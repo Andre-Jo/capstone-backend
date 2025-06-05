@@ -8,6 +8,7 @@ import lombok.Setter;
 @Setter
 @NoArgsConstructor
 public class UserUpdateRequest {
+    private String profileImage;
     private String password;
     private String nickname;
     private String currentSalary; // 현재 연봉

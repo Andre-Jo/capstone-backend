@@ -200,6 +200,11 @@ public class UserService {
     public UserInfoResponse updateUserInfo(String email, UserUpdateRequest request) {
         User user = findByEmail(email);
 
+        // 프로필 이미지 업데이트
+        if (request.getProfileImage() != null && !request.getProfileImage().isEmpty()) {
+            user.setProfileImage(request.getProfileImage());
+        }
+
         // 비밀번호 업데이트
         if (request.getPassword() != null && !request.getPassword().isEmpty()) {
             user.setPassword(passwordEncoder.encode(request.getPassword()));
