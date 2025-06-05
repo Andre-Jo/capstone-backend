@@ -44,7 +44,7 @@ public class TokenAuthenticationFilter extends OncePerRequestFilter {
         if (accessToken != null && tokenProvider.validToken(accessToken)) {
             Authentication authentication = tokenProvider.getAuthentication(accessToken);
             SecurityContextHolder.getContext().setAuthentication(authentication);
-            subscriptionUtil.checkAndExpireSubscription(authentication); // 👈 요 함수 추가
+            subscriptionUtil.checkAndExpireSubscription(authentication);
         } else if (refreshToken != null && tokenProvider.validToken(refreshToken)) {
             try {
                 String newAccessToken = tokenService.createNewAccessToken(refreshToken);

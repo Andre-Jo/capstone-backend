@@ -18,7 +18,7 @@ public class CookieUtil {
         cookie.setSecure(isProd); // 프로덕션에서만 Secure
         cookie.setPath("/");
         cookie.setMaxAge(maxAge);
-        cookie.setAttribute("SameSite", "None"); // 크로스사이트에서도 쿠키 전송 허용
+        cookie.setAttribute("SameSite", isProd ? "None" : "Lax");
         response.addCookie(cookie);
     }
 
